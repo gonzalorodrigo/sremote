@@ -1,14 +1,9 @@
-import sys
 import qdo
-import qdo_remote_api as remote
+import remote_server
+import sys
 
 if (sys.argv):
     file_route = sys.argv[1]
-    text_file = open(file_route, "r")
-    content = "\n".join(text_file.readlines())
-    command_name, args = remote.decode_call_request(content)
-    #print "COMMMMAND", command_name
-    reponse_obj = remote.call_method_object(qdo, command_name, args)
-    print remote.encode_call_response(reponse_obj, True)
+    print remote_server.process_incomming_call(qdo, file_route)
 else:
-    print remote.encode_call_response({}, False)
+    print remote_server.return_error()
