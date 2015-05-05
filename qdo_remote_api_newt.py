@@ -53,7 +53,10 @@ class QDONewtConnector(remote_api.CommsChannel):
         print data
         results = requests.post(cmdurl, data,
                                 cookies={'newt_sessionid': qdo_authkey})
+        print results
+
         output =  results.json()["output"]
+        print output
         del results
         return output, "", 0
 
@@ -73,7 +76,6 @@ class QDONewtConnector(remote_api.CommsChannel):
         data = bytearray(content)
         results = requests.put(cmdurl, data,
                                cookies={'newt_sessionid': qdo_authkey})
-        
         if (results.status_code == 200):
             del results
             return file_route
