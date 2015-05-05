@@ -2,7 +2,7 @@ import remote_api
 import subprocess
 import requests
 
-_interpreter_route = "~/qdo_interpreter.sh"
+_interpreter_route = "~/qdo_remote/qdo_interpreter.sh"
 
 
 class QDONewtConnector(remote_api.CommsChannel):
@@ -63,7 +63,7 @@ class QDONewtConnector(remote_api.CommsChannel):
         if file_route == None:
             file_route = self.gen_random_file_route()
 
-        cmdurl = ("https://newt.nersc.gov/newt/file/"+ self._hostname +"/"
+        cmdurl = ("https://newt.nersc.gov/newt/file/"+ self._hostname +
                   + file_route)
 
         print cmdurl
@@ -82,7 +82,7 @@ class QDONewtConnector(remote_api.CommsChannel):
 
 
     def gen_random_file_route(self):
-        base = "global/u1/"+self._username[0]+"/"+self._username+"/.qdo/"
+        base = "/global/u1/"+self._username[0]+"/"+self._username+"/.qdo/"
         return base+"file_name.dat"
 
     def retrieve_call_request(self, content_pointer):
