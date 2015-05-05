@@ -1,6 +1,6 @@
 #!/bin/csh
-/opt/modules/3.2.10.2/bin/modulecmd tcsh load python
-/opt/modules/3.2.10.2/bin/modulecmd tcsh load virtualenv
+module load python
+module load virtualenv
 cd ~/qdo_interpreter
-source env/bin/activate
+source env/bin/activate.csh
 python qdo_remote_server.py "${1}"
