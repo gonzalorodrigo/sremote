@@ -2,7 +2,7 @@ import remote_api
 import subprocess
 import requests
 
-_interpreter_route = "~/qdo_remote/qdo_interpreter.sh"
+_interpreter_route = "~/qdo_interpreter/qdo_interpreter_newt.sh"
 
 
 class QDONewtConnector(remote_api.CommsChannel):
@@ -47,9 +47,10 @@ class QDONewtConnector(remote_api.CommsChannel):
         qdo_authkey = self._token
 
         data = dict(
-            executable=_interpreter_route,
+            executable=_interpreter_route+" "+arg,
             loginenv='true',
         )
+        print data
         results = requests.post(cmdurl, data,
                                 cookies={'newt_sessionid': qdo_authkey})
         output =  results.json()["output"]
@@ -62,8 +63,8 @@ class QDONewtConnector(remote_api.CommsChannel):
         """
         if file_route == None:
             file_route = self.gen_random_file_route()
-
-        cmdurl = ("https://newt.nersc.gov/newt/file/"+ self._hostname +
+        
+        cmdurl = ("https://newt.nersc.gov/newt/file/"+ self._hostname
                   + file_route)
 
         print cmdurl

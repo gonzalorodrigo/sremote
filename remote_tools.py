@@ -20,14 +20,14 @@ The method response is a dictionary with two times:
  set_serializer
 
 """
-from xml_marshaller import xml_marshaller
+import json
 
 COMMAND_TYPE = "command"
 COMMAND_ARGS = "args"
 RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
 
-_serializer = xml_marshaller
+_serializer = json
 
 def call_method_object_command(obj, call_request):
     """Executes method in obj as instructed  by call_request.
