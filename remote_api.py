@@ -1,108 +1,76 @@
-""" 
-Tool-box to do remote Python functions calls.
 
-The class RemoteCliente and RemoteServer use these methods to serialize and
-deserialize the method call request and the method response.
 
-The method call request is a dictionary with two items:
-    - dic[COMMAND_TYPE]: string with  of the method to be executed
-    - dic[COMMAND_ARGS]: list of arguments of the method to be executed.
-e.g. call for methods
-    foo(arg1, arg2)
-    {COMMAND_TYPE: "foo", COMMAND_ARGS: [val_arg1, val_arg2]}
 
-The method response is a dictionary with two times:
-    - dic[RESPONSE_STATUS]: bool, True if the remote method call got to end.
-    - dic[RESPONSE_CONTENT]: if status == True then the return value of the
-      remote call. If status == False then a string explaining what failed. 
- 
- This methods uses xml_marshaller as a serializer, it can be changed by unsing
- set_serializer
+import remote_tools as remote
 
-"""
-from xml_marshaller import xml_marshaller
 
-COMMAND_TYPE = "command"
-COMMAND_ARGS = "args"
-RESPONSE_STATUS = "success"
-RESPONSE_CONTENT = "return_value"
-
-_serializer = xml_marshaller
-
-def call_method_object_command(obj, call_request):
-    """Executes method in obj as instructed  by call_request.
-    
-    Args:
-        obj: object whose method will be executed.
-        call_request: method call request. It indicates the name of the method
-        to be called and the argument values to be pased.
-    
-    Returns:
-        whatever the called method in obj returns.    
+class RemoteClient(object):
     """
-    command_name = call_request[COMMAND_TYPE]
-    args_obj = call_request[COMMAND_ARGS]
-    return call_method_object(command_name, args_obj)
+    Base class for the client side of the remoting functions
 
-def call_method_object(obj, method_name, args):
-    """Executes obj.method_name(*args) and returns what ever it returns."""
-    method = getattr(obj, method_name)
-    output = method(*args)
-    return output
-
-def process_remote_call(invoked_object, request_string):
-    """Deserializes a call_request and executes it in invoked_object.
+    Code to be remoted, will superclass this class and add the methods of the
+    API calling the do_remote_call with the corresponding arguments.
     
-    Args:
-        invoked_object: object whose method will be executed.
-        request_string: call_request in serialized format.
-    Returns: 
-        result of executing whatever is specified in request_sting in
-        invoked_object.
-    """ 
-    method_name, args = decode_call_request(request_string)
-    return call_method_object(invoked_object, method_name, args)
-
-def encode_call_request(command_name, args = []):
-    """Creates a call_request_object and serializes it."""
-    command_obj = {COMMAND_TYPE: command_name}
-    command_obj[COMMAND_ARGS] = args
-    return serialize_obj(command_obj)
-    
-def decode_call_request(call_request_serialized):
-    """Deserializes and decodes a call_request_object."""
-    obj = deserialize_obj(call_request_serialized)
-    return obj[COMMAND_TYPE], obj[COMMAND_ARGS]
-    
-def encode_call_response(return_value, success=True):
-    """Encodes and serializes a method response."""
-    response = {RESPONSE_STATUS:success}
-    response[RESPONSE_CONTENT] = return_value
-    return serialize_obj(response)
-
-def decode_call_response(call_response_serialized):
-    """Deserializes and decodes a method response."""
-    response_obj = deserialize_obj(call_response_serialized)
-    return response_obj[RESPONSE_STATUS], response_obj[RESPONSE_CONTENT]
- 
-def set_serializer(serializer):
-    """Sets the serializer of the library.
-    
-    Args:
-        serializer: an object that implements the methods:
-            - dumps(obj): returns the serialized vesio of obj
-            - loads(serialized_obj): returns the object serialized in
-              seriazlied_obj. 
+    During creation it receives a comms_client that will communicate with the
+    server.
     """
-    _serializer = serializer
 
-def serialize_obj(obj):
-    """return serialized version of obj."""
-    return _serializer.dumps(obj)
-   
-def deserialize_obj(command_string):
-    """returns object serialized in command_string."""
-    return _serializer.loads(command_string)
+    def __init__(self, comms_client):
+        """Initiazliation of the class
+        
+        Args:
+            comms_client: an object that is super class of RemoteComms class.
+        """
+        self._comms_client = comms_client
+
+    def do_remote_call(self, method_name, args=[]):
+        """ Uses _comms.client to send a request to execute method_name with
+        args.
+        
+        Args:
+            method_name: name of the method to be executed.
+            args: list with the arguments.
+        """
+        std_out, std_err, status = self._comms_client.place_and_execute(
+            remote.encode_call_request(method_name,
+                                       args))
+
+        success, response = remote.decode_call_response(std_out)
+        if (success):
+            return response
+        else:
+            raise Exception(str(response))
 
 
+class CommsChannel(object):
+    """
+    
+
+
+    """
+
+    def place_and_execute(self, content):
+        location = self.place_call_request(content)
+        return self.execute_request(location)
+
+    def execute_request(self, arg):
+        raise Exception("Non implemented")
+
+    def place_call_request(self, content, file_route=None):
+        raise Exception("Non implemented")
+    
+    def process_call_request(self, target_obj, method_call_request_pointer):
+        call_request_serialized = self.retrieve_call_request(
+                                  method_call_request_pointer)
+        command_name, args = remote.decode_call_request(call_request_serialized)
+        reponse_obj = remote.call_method_object(target_obj, command_name, args)
+        return remote.encode_call_response(reponse_obj, True)
+    
+    def retrieve_call_request(self, content_pointer):
+        raise Exception("Non implemented")
+    
+    def return_error(self):
+        return remote.encode_call_response({}, False)
+    
+    
 

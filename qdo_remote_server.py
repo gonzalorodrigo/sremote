@@ -1,9 +1,11 @@
 import qdo
-import remote_server
+import qdo_remote_api_sim
 import sys
 
+conn = qdo_remote_api_sim.QDOLocalConnector()
 if (sys.argv):
     file_route = sys.argv[1]
-    print remote_server.process_incomming_call(qdo, file_route)
+    
+    print conn.process_call_request(qdo, file_route)
 else:
-    print remote_server.return_error()
+    print conn.return_error()

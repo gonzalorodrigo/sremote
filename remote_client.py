@@ -11,8 +11,8 @@ class RemoteClient:
     Code to be remoted, will superclass this class and add the methods of the
     API calling the do_remote_call with the corresponding arguments.
     
-    In creating it receives a comms_client that will communicate with the
-    server
+    During creation it receives a CommsClient that will communicate with the
+    server.
     """
 
     def __init__(self, comms_client):

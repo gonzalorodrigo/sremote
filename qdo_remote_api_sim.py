@@ -1,8 +1,16 @@
+import remote_api
 import subprocess
-import CommsClient
+
+
+class QDORemoteClient(remote_api.RemoteClient):
+    def qsummary(self):
+        return_value = self.do_remote_call("qsummary")
+        print return_value
+
+
 _interpreter_route="./qdo_interpreter.sh"
 
-class QDOLocalConnector(CommsClient):
+class QDOLocalConnector(remote_api.CommsChannel):
     """
     Base class for the client side of the remoting functions
 
@@ -28,3 +36,9 @@ class QDOLocalConnector(CommsClient):
 
     def gen_random_file_route(self):
         return "file_name.dat"
+        
+    def retrieve_call_request(self, content_pointer):
+        text_file = open(content_pointer, "r")
+        content = "\n".join(text_file.readlines())
+        return content
+ 
