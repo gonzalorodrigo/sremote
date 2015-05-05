@@ -1,5 +1,5 @@
 import remote_client
-import newt_lib as newt
+import qdo_local_connector as conn
 
 class QDORemoteClient(remote_client.RemoteClient):
     def qsummary(self):
@@ -7,5 +7,5 @@ class QDORemoteClient(remote_client.RemoteClient):
         print return_value
 
 
-client = QDORemoteClient(newt.NewtClient("edison"))
+client = QDORemoteClient(conn.QDOLocalConnector("edison"))
 client.qsummary()
