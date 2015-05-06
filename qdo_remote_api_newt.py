@@ -1,5 +1,4 @@
 import remote_api
-import subprocess
 import requests
 
 _interpreter_route = "~/qdo_interpreter/qdo_interpreter_newt.sh"
