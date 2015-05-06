@@ -1,4 +1,5 @@
 #!/bin/csh
+set prompt='%B%m%b %C3>'
 module load python
 module load virtualenv
 virtualenv env
