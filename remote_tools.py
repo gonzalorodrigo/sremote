@@ -82,8 +82,11 @@ def encode_call_response(return_value, success=True):
 
 def decode_call_response(call_response_serialized):
     """Deserializes and decodes a method response."""
-    response_obj = deserialize_obj(call_response_serialized)
-    return response_obj[RESPONSE_STATUS], response_obj[RESPONSE_CONTENT]
+    try:
+        response_obj = deserialize_obj(call_response_serialized)
+        return response_obj[RESPONSE_STATUS], response_obj[RESPONSE_CONTENT]
+    except:
+        return False, "Bad response: "+str(call_response_serialized)
  
 def set_serializer(serializer):
     """Sets the serializer of the library.
