@@ -1,7 +1,11 @@
 """ 
 Tool-box to do remote Python functions calls.
 
+<<<<<<< HEAD
 The class RemoteClient and RemoteServer use these methods to serialize and
+=======
+The class RemoteCliente and RemoteServer use these methods to serialize and
+>>>>>>> 488dcb672ca76f8ec5c208e6941d3713eb526496
 deserialize the method call request and the method response.
 
 The method call request is a dictionary with two items:
@@ -16,7 +20,11 @@ The method response is a dictionary with two times:
     - dic[RESPONSE_CONTENT]: if status == True then the return value of the
       remote call. If status == False then a string explaining what failed. 
  
+<<<<<<< HEAD
  This methods uses JSON as a serializer, it can be changed by using
+=======
+ This methods uses xml_marshaller as a serializer, it can be changed by unsing
+>>>>>>> 488dcb672ca76f8ec5c208e6941d3713eb526496
  set_serializer
 
 """
