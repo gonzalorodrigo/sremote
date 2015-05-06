@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """ 
 Classes to do remote Python functions calls.
 
@@ -34,41 +33,21 @@ In the example qdo_remote_api_sim:
     - method call requests are stored as files. The references to them are just
       file system routes. 
 """
-=======
 
-
-
->>>>>>> 488dcb672ca76f8ec5c208e6941d3713eb526496
 import remote_tools as remote
 
 
 class RemoteClient(object):
-<<<<<<< HEAD
-
     """
     Base class for the client side of the remoting functions
 
     During creation it receives a comms_client that will communicate with the
     end point. 
-=======
-    """
-    Base class for the client side of the remoting functions
-
-    Code to be remoted, will superclass this class and add the methods of the
-    API calling the do_remote_call with the corresponding arguments.
-    
-    During creation it receives a comms_client that will communicate with the
-    server.
->>>>>>> 488dcb672ca76f8ec5c208e6941d3713eb526496
     """
 
     def __init__(self, comms_client):
-        """Initiazliation of the class
-<<<<<<< HEAD
+        """Init of the class
 
-=======
-        
->>>>>>> 488dcb672ca76f8ec5c208e6941d3713eb526496
         Args:
             comms_client: an object that is super class of RemoteComms class.
         """
@@ -77,11 +56,7 @@ class RemoteClient(object):
     def do_remote_call(self, method_name, args=[]):
         """ Uses _comms.client to send a request to execute method_name with
         args.
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> 488dcb672ca76f8ec5c208e6941d3713eb526496
         Args:
             method_name: name of the method to be executed.
             args: list with the arguments.
@@ -98,8 +73,6 @@ class RemoteClient(object):
 
 
 class CommsChannel(object):
-<<<<<<< HEAD
-
     """Base class for the communication in this remoting schema. 
 
     This class has the responsibility of providing an interface with/from the
@@ -177,38 +150,5 @@ class CommsChannel(object):
          This method is executed in the end point  
         """
         raise Exception("Non implemented")
-=======
-    """
-    
-
-
-    """
-
-    def place_and_execute(self, content):
-        location = self.place_call_request(content)
-        return self.execute_request(location)
-
-    def execute_request(self, arg):
-        raise Exception("Non implemented")
-
-    def place_call_request(self, content, file_route=None):
-        raise Exception("Non implemented")
-    
-    def process_call_request(self, target_obj, method_call_request_pointer):
-        call_request_serialized = self.retrieve_call_request(
-                                  method_call_request_pointer)
-        command_name, args = remote.decode_call_request(call_request_serialized)
-        reponse_obj = remote.call_method_object(target_obj, command_name, args)
-        return remote.encode_call_response(reponse_obj, True)
-    
-    def retrieve_call_request(self, content_pointer):
-        raise Exception("Non implemented")
-    
-    def return_error(self):
-        return remote.encode_call_response({}, False)
-    
-    
->>>>>>> 488dcb672ca76f8ec5c208e6941d3713eb526496
-
     def return_error(self):
         return remote.encode_call_response({}, False)
