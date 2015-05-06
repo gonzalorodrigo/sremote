@@ -25,26 +25,43 @@ class QDONewtConnector(remote_api.CommsChannel):
             )    
             url = "https://newt.nersc.gov/newt/auth/"
             results = requests.post(url, data)
+
             if results.status_code == 200:
                 res_obj = results.json()
-                newt_sessionid = res_obj['newt_sessionid']
-                self._token = newt_sessionid
-                del res_obj['newt_sessionid']
+                if (res_obj['auth']):
+                    newt_sessionid = res_obj['newt_sessionid']
+                    self._token = newt_sessionid
+                    del res_obj
+                    del results
+                    return True
+                del res_obj
                 del results
-                return True
+                return False
+                
             else:
                 del results
                 self._token = None
                 return False
         else:
             self._token = token
+    def status(self):
+        """Uses NEWT to run a command on the requested NERSC host
+        """
+        cmdurl = "https://newt.nersc.gov/newt/login/"
+        qdo_authkey = self._token
+
+        results = requests.get(cmdurl, cookies={'newt_sessionid': qdo_authkey})
+
+        ok_auth =  results.json()["auth"]
+        del results
+        return ok_auth
 
     def execute_request(self, arg):
         """Uses NEWT to run a command on the requested NERSC host
         """
         cmdurl = "https://newt.nersc.gov/newt/command/" + self._hostname
         qdo_authkey = self._token
-
+     
         data = dict(
             executable=_interpreter_route+" "+arg,
             loginenv='true',
@@ -66,12 +83,15 @@ class QDONewtConnector(remote_api.CommsChannel):
         
         cmdurl = ("https://newt.nersc.gov/newt/file/"+ self._hostname
                   + file_route)
+        
+        print cmdurl
 
         qdo_authkey = self._token
 
         data = bytearray(content)
         results = requests.put(cmdurl, data,
                                cookies={'newt_sessionid': qdo_authkey})
+        print results
         if (results.status_code == 200):
             del results
             return file_route
