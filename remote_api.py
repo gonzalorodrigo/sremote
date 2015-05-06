@@ -38,6 +38,7 @@ import remote_tools as remote
 
 
 class RemoteClient(object):
+
     """
     Base class for the client side of the remoting functions
 
@@ -64,15 +65,17 @@ class RemoteClient(object):
         std_out, std_err, status = self._comms_client.place_and_execute(
             remote.encode_call_request(method_name,
                                        args))
-
         success, response = remote.decode_call_response(std_out)
         if (success):
             return response
         else:
-            raise Exception(str(response))
+            raise Exception(
+                "Error executing " + method_name + "\n  Output:" + std_out +
+                "\n  Error:" + std_err)
 
 
 class CommsChannel(object):
+
     """Base class for the communication in this remoting schema. 
 
     This class has the responsibility of providing an interface with/from the
@@ -83,11 +86,11 @@ class CommsChannel(object):
         """Sends the method call request as an item that can be referenced. 
         Invokes the endpoint with that reference so it processes the
         call. 
-        
+
         Args:
             serialized_method_call_request: serialized versions of the method
             call request.
-        
+
         Returns: 
             reference to the serialeized method request.
         """
@@ -97,43 +100,43 @@ class CommsChannel(object):
     def execute_request(self, method_request_reference):
         """Invokes the endpoint so it uses the referenced method call request,
         processes it, and executes the corresponding method.
-        
+
         Args:
             method_request_reference: reference for the endpoint to find the
             methods call request.
-        
+
         Returns:
             whatever the method called returns.
         """
-        
+
         raise Exception("Non implemented")
 
-    def place_call_request(self, serialized_method_call_request, 
+    def place_call_request(self, serialized_method_call_request,
                            reference_route=None):
         """Sends a method call request to the end point. 
-        
+
         Args:
             serialized_method_call_request: serialized version of the request.
             reference_route: if set, the reference that the endpoint should use
             to find the request. If not, that reference will be calculated by
             this method.
-        
+
         Returns:
             reference used to store the request.
-        
+
         """
         raise Exception("Non implemented")
 
     def process_call_request(self, target_obj, method_call_request_pointer):
         """Executes a method of target_obj and returns its result encoded and
         serialized as a call response. This method is executed in the end point. 
-        
-        
+
+
         Args:
             targe_obj: object whose method will be executed.
             method_call_request_pointer: reference to find the method call
             request. It is retrieved, deserialized and decoded. 
-            
+
         Returns:
             serialized encoded call result object, containing what the executed
             method of target_obj returned.
@@ -150,5 +153,6 @@ class CommsChannel(object):
          This method is executed in the end point  
         """
         raise Exception("Non implemented")
+
     def return_error(self):
         return remote.encode_call_response({}, False)

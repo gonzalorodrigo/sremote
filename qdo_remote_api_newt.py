@@ -16,7 +16,7 @@ Definition of the comms channel:
 import remote_api
 import requests
 
-_interpreter_route = "~/qdo_interpreter/qdo_interpreter_newt.sh"
+_interpreter_route = "/bin/csh ~/qdo_interpreter/qdo_interpreter_newt.sh"
 
 
 class QDONewtConnector(remote_api.CommsChannel):
@@ -101,13 +101,14 @@ class QDONewtConnector(remote_api.CommsChannel):
             executable=_interpreter_route + " " + method_request_reference,
             loginenv='true',
         )
-
+        
         results = requests.post(cmdurl, data,
                                 cookies={'newt_sessionid': qdo_authkey})
 
         output = results.json()["output"]
+        error = results.json()["error"]
         del results
-        return output, "", 0
+        return output, error, 0
 
     def place_call_request(self, serialized_method_call_request,
                            reference_route=None):
@@ -129,14 +130,11 @@ class QDONewtConnector(remote_api.CommsChannel):
         cmdurl = ("https://newt.nersc.gov/newt/file/" + self._hostname
                   + reference_route)
 
-        print cmdurl
-
         qdo_authkey = self._token
 
         data = bytearray(serialized_method_call_request)
         results = requests.put(cmdurl, data,
                                cookies={'newt_sessionid': qdo_authkey})
-        print results
         if (results.status_code == 200):
             del results
             return reference_route

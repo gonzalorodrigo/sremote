@@ -1,7 +1,7 @@
 """python Endpoint for QDO
 
     Args:
-        argv[1]: files system route poiting to a file containint the method
+        argv[1]: files system route pointing to a file containing the method
         call request.
     
     Std_out: serialized version of the return object summarizing the execution
