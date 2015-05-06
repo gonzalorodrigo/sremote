@@ -50,13 +50,11 @@ class QDONewtConnector(remote_api.CommsChannel):
             executable=_interpreter_route+" "+arg,
             loginenv='true',
         )
-        print data
+    
         results = requests.post(cmdurl, data,
                                 cookies={'newt_sessionid': qdo_authkey})
-        print results
 
         output =  results.json()["output"]
-        print output
         del results
         return output, "", 0
 
@@ -70,7 +68,6 @@ class QDONewtConnector(remote_api.CommsChannel):
         cmdurl = ("https://newt.nersc.gov/newt/file/"+ self._hostname
                   + file_route)
 
-        print cmdurl
         qdo_authkey = self._token
 
         data = bytearray(content)
