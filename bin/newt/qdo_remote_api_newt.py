@@ -16,6 +16,12 @@ Definition of the comms channel:
 import sremote.api as remote_api
 import requests
 
+class QDORemoteClient(remote_api.RemoteClient):
+
+    def qsummary(self):
+        return_value = self.do_remote_call("qsummary")
+        print return_value
+
 _interpreter_route = "/bin/csh ~/qdo_interpreter/qdo_interpreter_newt.sh"
 
 
