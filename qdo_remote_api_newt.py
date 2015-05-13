@@ -13,7 +13,7 @@ Definition of the comms channel:
     - If follows the NEWT Api spect at newt.nersc.gov
 """
 
-import remote_api
+import sremote.api as remote_api
 import requests
 
 _interpreter_route = "/bin/csh ~/qdo_interpreter/qdo_interpreter_newt.sh"

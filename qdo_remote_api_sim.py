@@ -1,4 +1,4 @@
-import remote_api
+import sremote.api as remote_api
 import subprocess
 
 
@@ -45,3 +45,4 @@ class QDOLocalConnector(remote_api.CommsChannel):
         text_file = open(method_request_reference, "r")
         content = "\n".join(text_file.readlines())
         return content
+

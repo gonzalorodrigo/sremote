@@ -34,7 +34,7 @@ In the example qdo_remote_api_sim:
       file system routes. 
 """
 
-import remote_tools as remote
+import sremote.tools as remote
 
 
 class RemoteClient(object):
