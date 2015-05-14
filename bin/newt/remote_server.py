@@ -12,11 +12,7 @@
 import sremote.api
 import sys
 
-class ServerNewtConnector(sremote.api.ServerChannel):   
-    def retrieve_call_request(self, method_request_reference):
-        text_file = open(method_request_reference, "r")
-        content = "\n".join(text_file.readlines())
-        return content
+from newt_connector import ServerNewtConnector
 
 
 conn =  ServerNewtConnector()

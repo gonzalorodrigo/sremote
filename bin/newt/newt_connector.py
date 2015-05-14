@@ -151,3 +151,8 @@ class ClientNewtConnector(remote_api.ClientChannel):
             self._username[0] + "/" + self._username + "/.qdo/"
         return base + "file_name.dat"
 
+class ServerNewtConnector(remote_api.ServerChannel):   
+    def retrieve_call_request(self, method_request_reference):
+        text_file = open(method_request_reference, "r")
+        content = "\n".join(text_file.readlines())
+        return content
