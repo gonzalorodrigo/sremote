@@ -9,10 +9,10 @@
 """
 
 
-import newt_connector
+import sremote.api
 import sys
 
-conn = newt_connector.NewtConnector()
+conn =  sremote.api.CommsChannel()
 if (sys.argv):
     file_route = sys.argv[1]
 

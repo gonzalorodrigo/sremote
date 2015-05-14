@@ -8,10 +8,10 @@
     of the method to be called.
 """
 
-import local_connector
+import sremote.api
 import sys
 
-conn = local_connector.LocalConnector()
+conn =  sremote.api.CommsChannel()
 if (sys.argv):
     file_route = sys.argv[1]
     print conn.process_call_request(file_route)
