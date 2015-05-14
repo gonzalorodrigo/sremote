@@ -4,7 +4,7 @@ import newt_connector
 from sys import argv
 
 print argv
-connector = newt_connector.NewtConnector(argv[1])
+connector = newt_connector.ClientNewtConnector(argv[1])
 client_api.connector = connector
 
 if not connector.auth(argv[2], password=argv[3]):

@@ -2,7 +2,7 @@ import sremote.api as remote_api
 import subprocess
 
 
-class LocalConnector(remote_api.CommsChannel):
+class ClientLocalConnector(remote_api.ClientChannel):
 
     """
     Connector for remoting functions. It relaies on executing a shell script
@@ -31,8 +31,12 @@ class LocalConnector(remote_api.CommsChannel):
     def gen_random_file_route(self):
         return "file_name.dat"
 
+
+class ServerLocalConnector(remote_api.ServerChannel):
     def retrieve_call_request(self, method_request_reference):
         text_file = open(method_request_reference, "r")
         content = "\n".join(text_file.readlines())
         return content
+
+
 

@@ -20,7 +20,7 @@ import requests
 
 
 
-class NewtConnector(remote_api.CommsChannel):
+class ClientNewtConnector(remote_api.ClientChannel):
 
     """Comms class to use remoting with NEWT
     """
@@ -151,7 +151,3 @@ class NewtConnector(remote_api.CommsChannel):
             self._username[0] + "/" + self._username + "/.qdo/"
         return base + "file_name.dat"
 
-    def retrieve_call_request(self, method_request_reference):
-        text_file = open(method_request_reference, "r")
-        content = "\n".join(text_file.readlines())
-        return content

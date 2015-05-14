@@ -16,5 +16,5 @@ def qsummary():
     print return_value
     
 
-_connector = local_connector.LocalConnector("./interpreter.sh")
+_connector = local_connector.ClientLocalConnector("./interpreter.sh")
 qsummary()

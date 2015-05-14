@@ -12,7 +12,14 @@
 import sremote.api
 import sys
 
-conn =  sremote.api.CommsChannel()
+class ServerNewtConnector(sremote.api.ServerChannel):   
+    def retrieve_call_request(self, method_request_reference):
+        text_file = open(method_request_reference, "r")
+        content = "\n".join(text_file.readlines())
+        return content
+
+
+conn =  ServerNewtConnector()
 if (sys.argv):
     file_route = sys.argv[1]
 
