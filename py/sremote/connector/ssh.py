@@ -17,7 +17,11 @@ class ClientSSHConnector(remote_api.ClientChannel):
     
     def auth(self, username):
         self._username = username
-        self.home_dir = self.execute_command("pwd")
+        self._home_dir = self.get_pwd()
+    
+    def get_pwd(self):
+        dir_string =  self.execute_command("pwd")[0]
+        return dir_string.replace("\n", "")
         
 
     def execute_request(self, method_request_reference):
@@ -35,7 +39,7 @@ class ClientSSHConnector(remote_api.ClientChannel):
     def gen_random_file_route(self):
         return "file_name.dat"
     
-    def copy_file(self, origin_route, dest_route):
+    def push_file(self, origin_route, dest_route):
         command_list =  ["scp", origin_route, self._username + "@" +
                          self._hostname + ":" + dest_route]
         print command_list
@@ -43,7 +47,18 @@ class ClientSSHConnector(remote_api.ClientChannel):
         output, err = p.communicate()
         rc = p.returncode
         if (rc!=0):
-            print "File copy operation error", output, err
+            print "File push operation error", output, err
+        return rc == 0
+    
+    def retrieve_file(self, origin_route, dest_route):
+        command_list =  ["scp", self._username + "@" +
+                 self._hostname + ":" + origin_route,  dest_route]
+        print command_list
+        p = subprocess.Popen(command_list, stdout=subprocess.PIPE)
+        output, err = p.communicate()
+        rc = p.returncode
+        if (rc!=0):
+            print "File retrieve operation error", output, err
         return rc == 0
         
     def execute_command(self, command, arg_list=[]):
@@ -53,6 +68,13 @@ class ClientSSHConnector(remote_api.ClientChannel):
         output, err = p.communicate()
         rc = p.returncode
         return output, err, rc
+    
+    def get_home_dir(self):
+        return self._home_dir
+    
+    def get_dir(self):
+        print self.get_home_dir()
+        return self.get_home_dir()+"/.sremote/ssh"
          
 
 

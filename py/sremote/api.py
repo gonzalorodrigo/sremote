@@ -73,6 +73,36 @@ class RemoteClient(object):
                 "Error executing " +module_name+"."+ method_name + "\n  Output:"
                  + str(std_out) + "\n  Error:" + str(std_err))
 
+        
+    def do_bootstrap_install(self):
+        install_dir = self._comms_client.get_dir()
+        print "INSTALLDIR", install_dir
+        self._comms_client.execute_command("mkdir", ["-p", install_dir])
+        if not self._comms_client.push_file("./setup_bootstrap.sh", 
+                                   install_dir+"/setup_bootstrap.sh"):
+            print "Error placing installation script."
+            return False
+        if not self._comms_client.push_file("./interpreter.sh", 
+                               install_dir+"/interpreter.sh"):
+            print "Error placing interpreter script"
+            return False
+        output, err, rc = self._comms_client.execute_command("/bin/csh", 
+                            [install_dir+"/setup_bootstrap.sh"])
+        print "Install result:", rc, output, err
+        return True
+    
+    def do_install_git_module(self, git_url):
+        install_dir = self._comms_client.get_dir()
+        if not self._comms_client.push_file("./install_git_module.sh", 
+                                   install_dir+"/install_git_module.sh"):
+            print "Error placing installation script."
+            return False
+        output, err, rc = self._comms_client.execute_command("/bin/csh", 
+                        [install_dir+"/install_git_module.sh", git_url])
+        print "Install result:", rc, output, err
+        return True
+        
+
 
 class ClientChannel(object):
 
@@ -81,6 +111,7 @@ class ClientChannel(object):
     This class has the responsibility of providing an interface with/from the
     end point. 
     """
+
 
     def place_and_execute(self, serialized_method_call_request):
         """Sends the method call request as an item that can be referenced. 
@@ -127,6 +158,20 @@ class ClientChannel(object):
         """
 
         raise Exception("Non implemented")
+    
+    def copy_file(self, origin_route, dest_route):
+        raise Exception("Non implemented")
+    
+    def retrieve_file(self, origing_route, dest_route):
+        raise Exception("Non implemented")
+    
+    def execute_command(self, command, arg_list=[]):
+        raise Exception("Non implemented")
+    
+    def get_home_dir(self):
+        raise Exception("Non implemented")
+    def get_dir(self):
+        return self.get_home_dir()+".sremote/generic"
     
     
 class ServerChannel(object):    
