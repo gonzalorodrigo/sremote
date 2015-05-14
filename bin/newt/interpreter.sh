@@ -7,6 +7,6 @@
 set prompt='%B%m%b %C3>' # needed in Carver.
 module load python
 module load virtualenv
-cd ~/qdo_interpreter
+cd ~/qdo_interpreter/bin/newt
 source env/bin/activate.csh
 python remote_server.py "${1}"
