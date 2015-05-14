@@ -86,19 +86,29 @@ class RemoteClient(object):
                                install_dir+"/interpreter.sh"):
             print "Error placing interpreter script"
             return False
+        if not self._comms_client.push_file("./remote_server.py", 
+                               install_dir+"/remote_server.py"):
+            print "Error placing interpreter script"
+            return False
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
                             [install_dir+"/setup_bootstrap.sh"])
         print "Install result:", rc, output, err
+        self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git",
+                                   "modular")
         return True
     
-    def do_install_git_module(self, git_url):
+    def do_install_git_module(self, git_url, branch=None):
         install_dir = self._comms_client.get_dir()
         if not self._comms_client.push_file("./install_git_module.sh", 
                                    install_dir+"/install_git_module.sh"):
             print "Error placing installation script."
             return False
+        branch_arg = []
+        if branch:
+            branch_arg.append(branch)
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
-                        [install_dir+"/install_git_module.sh", git_url])
+                        [install_dir + "/install_git_module.sh", git_url] +
+                        branch_arg)
         print "Install result:", rc, output, err
         return True
         

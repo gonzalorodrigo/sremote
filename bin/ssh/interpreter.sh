@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/bin/csh
 module load python
 module load virtualenv
-
-source env/bin/activate
+set install_dir="~/.sremote/ssh"
+cd $install_dir
+source env/bin/activate.csh
 set python_bin=`which python`
-cd ~/.sremote
-setenv PYTHONUSERBASE "./pythonuserbase"
+
 python remote_server.py "${1}"

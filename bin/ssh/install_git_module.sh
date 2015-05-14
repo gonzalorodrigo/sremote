@@ -13,7 +13,12 @@ source env/bin/activate.csh
 mkdir tmp
 cd tmp
 $git_bin clone $1 module_source
-cd module_source/py
+
+cd module_source
+if ($#argv == 2) then
+	$git_bin checkout $2 
+endif
+cd py
 python setup.py install
 cd ../..
 

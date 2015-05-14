@@ -9,7 +9,7 @@ class ClientSSHConnector(remote_api.ClientChannel):
     in the same directory as the code. The route to such script can be
     configured in creation time.
     """
-    def __init__(self, hostname, interpreter_route = "./interpreter.sh"):
+    def __init__(self, hostname, interpreter_route = "interpreter.sh"):
         self._interpreter_route = interpreter_route
         self._hostname = hostname;
     
@@ -25,19 +25,27 @@ class ClientSSHConnector(remote_api.ClientChannel):
         
 
     def execute_request(self, method_request_reference):
-        return self.execute_command(self._interpreter_route, 
-                               method_request_reference)
+        print "HOLA", "/bin/csh", [self.get_dir()+"/"+self._interpreter_route, 
+                               method_request_reference]
+        return self.execute_command("/bin/csh", 
+                               [self.get_dir()+"/"+self._interpreter_route, 
+                               method_request_reference])
 
-    def place_call_request(self, serialized_method_call_request, reference_route=None):
-        if reference_route == None:
-            reference_route = self.gen_random_file_route()
+    def place_call_request(self, serialized_method_call_request):
+       
+        reference_route = self.get_local_temp_file_route()
         text_file = open(reference_route, "w")
         text_file.write(serialized_method_call_request)
         text_file.close()
-        return reference_route
+        remote_file_route = self.gen_remote_temp_file_route()
+        self.push_file(reference_route, remote_file_route)
+        return remote_file_route
 
-    def gen_random_file_route(self):
-        return "file_name.dat"
+    def gen_remote_temp_file_route(self):
+        return self.get_dir()+"/tmp/file_name.dat"
+    def get_local_temp_file_route(self):
+        return "/tmp/file_name.dat"
+
     
     def push_file(self, origin_route, dest_route):
         command_list =  ["scp", origin_route, self._username + "@" +
@@ -73,7 +81,6 @@ class ClientSSHConnector(remote_api.ClientChannel):
         return self._home_dir
     
     def get_dir(self):
-        print self.get_home_dir()
         return self.get_home_dir()+"/.sremote/ssh"
          
 

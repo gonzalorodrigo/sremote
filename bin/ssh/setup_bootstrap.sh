@@ -10,6 +10,7 @@ set virtualenv_bin=`which virtualenv`
 set install_dir="~/.sremote/ssh"
 cd $install_dir
 
+echo "Checking if virutalenv is available"
 which virtualenv
 if ( $1 == 1) then
 	mkdir pythonuserbase
@@ -26,12 +27,19 @@ endif
 
 $virtualenv_bin env
 
-source env/bin/activate.csh
+# source env/bin/activate.csh
 
-#pip install -r requirements.txt
+# set python_bin=`which python`
+# echo "Using python: ${python_bin}"
+# #pip install -r requirements.txt
 
-$git_bin clone https://github.com/gonzalorodrigo/qdo_interpreter.git remote_libs_repo
-cd remote_libs_repo
-$git_bin checkout modular
-cd py
-python setup.py install
+# if (-d remote_libs_repo ) then
+# 	echo "Cleaning up previous copy of remote lib"
+#     rm -rf remote_libs_repo
+# endif
+
+# $git_bin clone https://github.com/gonzalorodrigo/qdo_interpreter.git remote_libs_repo
+# cd remote_libs_repo
+# $git_bin checkout modular
+# cd py
+# ${python_bin} setup.py install
