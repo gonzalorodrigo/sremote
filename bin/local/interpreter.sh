@@ -1,3 +1,3 @@
 #!/bin/bash
 source env/bin/activate
-python qdo_remote_server.py "${1}"
+python remote_server.py "${1}"

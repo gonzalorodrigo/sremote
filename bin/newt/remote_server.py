@@ -8,14 +8,14 @@
     of the method to be called.
 """
 
-import qdo
-import qdo_remote_api_sim
+
+import newt_connector
 import sys
 
-conn = qdo_remote_api_sim.QDOLocalConnector()
+conn = newt_connector.NewtConnector()
 if (sys.argv):
     file_route = sys.argv[1]
 
-    print conn.process_call_request(qdo, file_route)
+    print conn.process_call_request(file_route)
 else:
     print conn.return_error()

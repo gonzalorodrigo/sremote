@@ -22,6 +22,7 @@ The method response is a dictionary with two times:
 """
 import json
 
+COMMAND_MODULE = "module"
 COMMAND_TYPE = "command"
 COMMAND_ARGS = "args"
 RESPONSE_STATUS = "success"
@@ -29,7 +30,7 @@ RESPONSE_CONTENT = "return_value"
 
 _serializer = json
 
-def call_method_object_command(obj, call_request):
+def call_method_object_command(call_request):
     """Executes method in obj as instructed  by call_request.
     
     Args:
@@ -40,17 +41,19 @@ def call_method_object_command(obj, call_request):
     Returns:
         whatever the called method in obj returns.    
     """
+    module_name = call_request[COMMAND_MODULE]
     command_name = call_request[COMMAND_TYPE]
     args_obj = call_request[COMMAND_ARGS]
-    return call_method_object(command_name, args_obj)
+    return call_method_object(module_name, command_name, args_obj)
 
-def call_method_object(obj, method_name, args):
+def call_method_object(module_name, method_name, args):
     """Executes obj.method_name(*args) and returns what ever it returns."""
+    obj = __import__(module_name, fromlist=[''])
     method = getattr(obj, method_name)
     output = method(*args)
     return output
 
-def process_remote_call(invoked_object, request_string):
+def process_remote_call(request_string):
     """Deserializes a call_request and executes it in invoked_object.
     
     Args:
@@ -60,19 +63,20 @@ def process_remote_call(invoked_object, request_string):
         result of executing whatever is specified in request_sting in
         invoked_object.
     """ 
-    method_name, args = decode_call_request(request_string)
-    return call_method_object(invoked_object, method_name, args)
+    module_name, method_name, args = decode_call_request(request_string)
+    return call_method_object(module_name, method_name, args)
 
-def encode_call_request(command_name, args = []):
+def encode_call_request(module_name, command_name, args = []):
     """Creates a call_request_object and serializes it."""
     command_obj = {COMMAND_TYPE: command_name}
     command_obj[COMMAND_ARGS] = args
+    command_obj[COMMAND_MODULE] = module_name
     return serialize_obj(command_obj)
     
 def decode_call_request(call_request_serialized):
     """Deserializes and decodes a call_request_object."""
     obj = deserialize_obj(call_request_serialized)
-    return obj[COMMAND_TYPE], obj[COMMAND_ARGS]
+    return obj[COMMAND_MODULE], obj[COMMAND_TYPE], obj[COMMAND_ARGS]
     
 def encode_call_response(return_value, success=True):
     """Encodes and serializes a method response."""

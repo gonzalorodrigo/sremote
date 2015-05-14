@@ -54,7 +54,7 @@ class RemoteClient(object):
         """
         self._comms_client = comms_client
 
-    def do_remote_call(self, method_name, args=[]):
+    def do_remote_call(self, module_name, method_name, args=[]):
         """ Uses _comms.client to send a request to execute method_name with
         args.
 
@@ -63,15 +63,15 @@ class RemoteClient(object):
             args: list with the arguments.
         """
         std_out, std_err, status = self._comms_client.place_and_execute(
-            remote.encode_call_request(method_name,
+            remote.encode_call_request(module_name, method_name,
                                        args))
         success, response = remote.decode_call_response(std_out)
         if (success):
             return response
         else:
             raise Exception(
-                "Error executing " + method_name + "\n  Output:" + std_out +
-                "\n  Error:" + std_err)
+                "Error executing " +module_name+"."+ method_name + "\n  Output:"
+                 + str(std_out) + "\n  Error:" + str(std_err))
 
 
 class CommsChannel(object):
@@ -127,7 +127,7 @@ class CommsChannel(object):
         """
         raise Exception("Non implemented")
 
-    def process_call_request(self, target_obj, method_call_request_pointer):
+    def process_call_request(self, method_call_request_pointer):
         """Executes a method of target_obj and returns its result encoded and
         serialized as a call response. This method is executed in the end point. 
 
@@ -143,9 +143,9 @@ class CommsChannel(object):
         """
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
-        command_name, args = remote.decode_call_request(
+        target_obj_name, command_name, args = remote.decode_call_request(
             call_request_serialized)
-        reponse_obj = remote.call_method_object(target_obj, command_name, args)
+        reponse_obj = remote.call_method_object(target_obj_name, command_name, args)
         return remote.encode_call_response(reponse_obj, True)
 
     def retrieve_call_request(self, method_request_reference):

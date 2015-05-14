@@ -2,30 +2,20 @@ import sremote.api as remote_api
 import subprocess
 
 
-class QDORemoteClient(remote_api.RemoteClient):
-
-    def qsummary(self):
-        return_value = self.do_remote_call("qsummary")
-        print return_value
-
-
-_interpreter_route = "./qdo_interpreter_sim.sh"
-
-
-class QDOLocalConnector(remote_api.CommsChannel):
+class LocalConnector(remote_api.CommsChannel):
 
     """
-    Base class for the client side of the remoting functions
-
-
+    Connector for remoting functions. It relaies on executing a shell script
+    in the same directory as the code. The route to such script can be
+    configured in creation time.
     """
-
-    def __init__(self, hostname="hopper"):
-        self._hostnamm = hostname
+    def __init__(self, interpreter_route = "./interpreter.sh"):
+        self._interpreter_route = interpreter_route
 
     def execute_request(self, method_request_reference):
         p = subprocess.Popen(
-            [_interpreter_route, method_request_reference], stdout=subprocess.PIPE)
+            [self._interpreter_route, method_request_reference], 
+                stdout=subprocess.PIPE)
         output, err = p.communicate()
         rc = p.returncode
         return output, err, rc

@@ -16,25 +16,23 @@ Definition of the comms channel:
 import sremote.api as remote_api
 import requests
 
-class QDORemoteClient(remote_api.RemoteClient):
-
-    def qsummary(self):
-        return_value = self.do_remote_call("qsummary")
-        print return_value
-
-_interpreter_route = "/bin/csh ~/qdo_interpreter/qdo_interpreter_newt.sh"
 
 
-class QDONewtConnector(remote_api.CommsChannel):
+
+
+class NewtConnector(remote_api.CommsChannel):
 
     """Comms class to use remoting with NEWT
     """
 
-    def __init__(self, hostname="hopper"):
+    def __init__(self, hostname="hopper", 
+                 interpreter_route = 
+                    "/bin/csh ~/qdo_interpreter/bin/newt/interpreter.sh"):
         """Creation method, the destination machine is specified in hostname."""
 
         self._hostname = hostname
         self._token = None
+        self._interpreter_route = interpreter_route
 
     def auth(self, username, password=None, token=None):
         """Auth method. It performs auth operation against the newt server and
@@ -104,7 +102,7 @@ class QDONewtConnector(remote_api.CommsChannel):
         qdo_authkey = self._token
 
         data = dict(
-            executable=_interpreter_route + " " + method_request_reference,
+            executable=self._interpreter_route + " " + method_request_reference,
             loginenv='true',
         )
         
