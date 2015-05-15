@@ -95,7 +95,7 @@ class RemoteClient(object):
                             [install_dir+"/setup_bootstrap.sh"])
         print "Install result:", rc, output, err
         self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git",
-                                   "modular")
+                                   "simplify")
         return True
     
     def do_install_git_module(self, git_url, branch=None):
