@@ -172,7 +172,7 @@ class ClientChannel(object):
             file_name+=".out"
         return file_name
  
-    def copy_file(self, origin_route, dest_route):
+    def push_file(self, origin_route, dest_route):
         raise Exception("Non implemented")
     
     def retrieve_file(self, origing_route, dest_route):
@@ -184,7 +184,9 @@ class ClientChannel(object):
     def get_home_dir(self):
         raise Exception("Non implemented")
     def get_dir(self):
-        return self.get_home_dir()+".sremote/generic"
+        return self.get_home_dir()+"/.sremote"
+         
+
     
     
 class ServerChannel(object):    
@@ -216,11 +218,13 @@ class ServerChannel(object):
         
 
     def retrieve_call_request(self, method_request_reference):
-        """Retrieves a method_request_reference without transfomring it.
-         This method is executed in the end point  
-        """
-        raise Exception("Non implemented")
+        text_file = open(method_request_reference, "r")
+        content = "\n".join(text_file.readlines())
+        text_file.close()
+        return content
     def store_call_response(self, reference_route, content):
-        raise Exception("Non implemented")
+        text_file = open(reference_route, "w")
+        text_file.write(content)
+        text_file.close()
     def return_error(self):
         return remote.encode_call_response({}, False)

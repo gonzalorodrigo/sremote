@@ -7,12 +7,13 @@ set python_bin=`which python`
 set git_bin=`which git`
 set easy_install_bin=`which easy_install`
 set virtualenv_bin=`which virtualenv`
-set install_dir="~/.sremote/ssh"
+set install_dir="~/.sremote"
 cd $install_dir
 
-echo "Checking if virutalenv is available"
+
 which virtualenv
-if ( $1 == 1) then
+if ($? == 1) then
+	echo "Virutalenv is not available, installing"
 	mkdir pythonuserbase
 	setenv PYTHONUSERBASE "./pythonuserbase"
 	mkdir -p "$PYTHONUSERBASE/lib/python/site-packages"

@@ -4,8 +4,8 @@ import sremote.connector.ssh as ssh
 from sys import argv
 
 
-connector = ssh.ClientSSHConnector("hopper.nersc.gov")
-connector.auth("gprodri")
+connector = ssh.ClientSSHConnector("127.0.0.1")
+connector.auth("gonzalo")
 
 client = remote.RemoteClient(connector)
 

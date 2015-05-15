@@ -6,7 +6,7 @@ module load virtualenv
 set python_bin=`which python`
 set git_bin=`which git`
 set easy_install_bin=`which easy_install`
-set install_dir="~/.sremote/ssh"
+set install_dir="~/.sremote"
 cd $install_dir
 source env/bin/activate.csh
 

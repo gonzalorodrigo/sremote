@@ -67,20 +67,20 @@ class ClientSSHConnector(remote_api.ClientChannel):
         return self._home_dir
     
     def get_dir(self):
-        return self.get_home_dir()+"/.sremote/ssh"
+        return self.get_home_dir()+"/.sremote"
          
 
 
-class ServerSSHConnector(remote_api.ServerChannel):
-    def retrieve_call_request(self, method_request_reference):
-        text_file = open(method_request_reference, "r")
-        content = "\n".join(text_file.readlines())
-        text_file.close()
-        return content
-    def store_call_response(self, reference_route, content):
-        text_file = open(reference_route, "w")
-        text_file.write(content)
-        text_file.close()
+# class ServerSSHConnector(remote_api.ServerChannel):
+#     def retrieve_call_request(self, method_request_reference):
+#         text_file = open(method_request_reference, "r")
+#         content = "\n".join(text_file.readlines())
+#         text_file.close()
+#         return content
+#     def store_call_response(self, reference_route, content):
+#         text_file = open(reference_route, "w")
+#         text_file.write(content)
+#         text_file.close()
 
 
 
