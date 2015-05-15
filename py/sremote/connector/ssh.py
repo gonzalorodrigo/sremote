@@ -4,7 +4,8 @@ import subprocess
 
 class ClientSSHConnector(remote_api.ClientChannel):
 
-    def __init__(self, hostname):
+    def __init__(self, hostname, interpreter_route = "interpreter.sh"):
+        self._interpreter_route = interpreter_route
         self._hostname = hostname;
     
 

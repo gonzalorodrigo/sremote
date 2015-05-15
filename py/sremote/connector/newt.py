@@ -1,0 +1,153 @@
+import sremote.api as remote_api
+import requests
+
+class ClientNEWTConnector(remote_api.ClientChannel):
+
+    
+    def __init__(self, hostname, interpreter_route = "interpreter.sh"):
+        self._interpreter_route = interpreter_route
+        self._hostname = hostname;
+        self._token = None
+    
+    
+    def auth(self, username, password=None, token=None):
+        """Auth method. It performs auth operation against the newt server and
+        stores the token for futher use.
+
+        Args:
+            username: user to be auth as. It is stored for future operations.
+            password: if set, the auth process is executed and token retrieved.
+            Token is stored for further operations.
+            token: if password not set, this value is stored as the token for
+            future operations.
+
+        Returns:
+            True, if auth is successful.
+        """
+        self._username = username
+        if password:
+            data = dict(
+                username=username,
+                password=password,
+            )
+            url = "https://newt.nersc.gov/newt/auth/"
+            results = requests.post(url, data)
+            if results.status_code == 200:
+                # We may get code 200, but still auth may have failed.
+                res_obj = results.json()
+                if (res_obj['auth']):
+                    newt_sessionid = res_obj['newt_sessionid']
+                    self._token = newt_sessionid
+                    del res_obj
+                    del results
+                    self._home_dir = self.get_pwd()
+                    return True
+                del res_obj
+                del results
+                return False
+            else:
+                del results
+                self._token = None
+                return False
+        else:
+            self._token = token
+            self._home_dir = self.get_pwd()
+        
+    
+    def status(self):
+        """Checks if auth is successful"""
+        cmdurl = "https://newt.nersc.gov/newt/login/"
+        qdo_authkey = self._token
+
+        results = requests.get(cmdurl, cookies={'newt_sessionid': qdo_authkey})
+
+        ok_auth = results.json()["auth"]
+        del results
+        return ok_auth
+
+#     def execute_request(self, method_request_reference, 
+#                         method_response_reference):
+#             
+#         cmdurl = "https://newt.nersc.gov/newt/command/" + self._hostname
+#         qdo_authkey = self._token
+# 
+#         data = dict(
+#             executable=self._interpreter_route + " " + 
+#                 method_request_reference + " " +
+#                 method_response_reference,
+#             loginenv='true',
+#         )
+#         
+#         results = requests.post(cmdurl, data,
+#                                 cookies={'newt_sessionid': qdo_authkey})
+# 
+#         output = results.json()["output"]
+#         error = results.json()["error"]
+#         del results
+#         return output, error, 0
+#     # next methods (2) can be moved to the connector base
+#     
+# 
+#     
+    def push_file(self, origin_route, dest_route):
+
+        cmdurl = ("https://newt.nersc.gov/newt/file/" + self._hostname
+                  + dest_route)
+
+        qdo_authkey = self._token
+        text_file = open(origin_route, "r")
+    
+        results = requests.put(cmdurl, text_file,
+                               cookies={'newt_sessionid': qdo_authkey})
+        text_file.close()
+        if (results.status_code == 200):
+            del results
+            return True
+        else:
+            del results
+            return False
+    
+    def retrieve_file(self, origin_route, dest_route):
+        
+        cmdurl = ("https://newt.nersc.gov/newt/file/" + self._hostname
+                  + origin_route +"?view=read")
+
+        qdo_authkey = self._token
+        text_file = open(dest_route, "w")
+    
+        results = requests.get(cmdurl, text_file,
+                               cookies={'newt_sessionid': qdo_authkey})
+        text_file.writelines(results)
+        text_file.close()
+        if (results.status_code == 200):
+            del results
+            return True
+        else:
+            del results
+            return False
+
+        
+    def execute_command(self, command, arg_list=[]):
+        cmdurl = "https://newt.nersc.gov/newt/command/" + self._hostname
+        qdo_authkey = self._token
+
+        data = dict(
+            executable=command + " ".join(arg_list),
+            loginenv='true',
+        )
+        print data
+        
+        results = requests.post(cmdurl, data,
+                                cookies={'newt_sessionid': qdo_authkey})
+
+        output = results.json()["output"]
+        error = results.json()["error"]
+        del results
+        return output, error, 0
+    
+    def get_home_dir(self):
+        return self._home_dir
+
+
+
+
