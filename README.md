@@ -1,34 +1,36 @@
-### qdo_interpreter
+## SRemote: Simple Remote tool for Python.
 
-This code is meant to enable remoting of python code through NEWT: code
-calls a ptyhon method in a host, but it is actually executed in a NERSC system.
-It only allows to remote methods which arguments and return are serializable
-by JSON.
+### Introduction
+This code is meant to enable remote execution of Python code. It is
+composed of:
+- bin/installer: Code to set up the remote machine tow work Installer:
+  it connects to remote host and installs the sremote code. In this
+  case they are customized to install the QDO lib also.
+- bin/client: Two examples of how to connect a configured remote
+  host and execute a fuction of the qdo library.
+- sremote package: Core of this system. Includes the general functions
+  for deployment, remote execution and the connectors. The connectors
+  are specific class that allow control of the remote host with
+  the following minimum functions:copy a file to the remote host,
+  read a file from the remote host, and execute code in it. 
+  
+There are two implementations of the connectors:
+- SSH: using ssh execution and scp.
+- Newt: using NERSC newt api to access Edison, Hopper, and Carver.
 
-To see how it works:
-- Clone this repo somewhere.
-- run setup_sim.sh: it creates the environment to run the simulated version
-(communacation end point through local files) and retrieves a modified version
-of the QDO library with a special method: qsummary, generates a JSON
-summary of the queues,
-- run python test_qdo_remote_newt.py to see how it works.
+### Instalation
+The installation process sets up the a user account of the remote
+host:
+- Creates .sremote folder in 
+- It enables Python.
+- Installs pip and virtualenv localy (only if not present).
+- Creates a virtual environment.
+- Retrieves this the sremote lib from a git repo and installs it
+  in the environment.
+- Retrieves the QDO library from a git repo and installs it in the
+  environment.
+ 
+Code using remote calls only have to use calls like the ones
+present in the bin/client code files. 
 
-
-Test the NEWT version:
-NERSC side:
-- Login in a NERSC side
-- Clone the repo in your home directory.
-- run setup_newt.sh: it creates the environment to run the NEWT version
- and retrieves a modified version of the QDO library with a special method:
- qsummary, generates a JSON
- summary of the queues,
-
-CLient side:
-- Clone the repo in your home directory.
-- run setup_newt.sh. Some things will give error messages but it is fine.
-- run: python test_qdo_remote_sim.py "username" "password"
-(use your NERSC user pass)
-
-
-
-
+### Communication protocol

@@ -65,30 +65,6 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         del results
         return ok_auth
 
-#     def execute_request(self, method_request_reference, 
-#                         method_response_reference):
-#             
-#         cmdurl = "https://newt.nersc.gov/newt/command/" + self._hostname
-#         qdo_authkey = self._token
-# 
-#         data = dict(
-#             executable=self._interpreter_route + " " + 
-#                 method_request_reference + " " +
-#                 method_response_reference,
-#             loginenv='true',
-#         )
-#         
-#         results = requests.post(cmdurl, data,
-#                                 cookies={'newt_sessionid': qdo_authkey})
-# 
-#         output = results.json()["output"]
-#         error = results.json()["error"]
-#         del results
-#         return output, error, 0
-#     # next methods (2) can be moved to the connector base
-#     
-# 
-#     
     def push_file(self, origin_route, dest_route):
 
         cmdurl = ("https://newt.nersc.gov/newt/file/" + self._hostname
@@ -96,7 +72,6 @@ class ClientNEWTConnector(remote_api.ClientChannel):
 
         qdo_authkey = self._token
         text_file = open(origin_route, "r")
-    
         results = requests.put(cmdurl, text_file,
                                cookies={'newt_sessionid': qdo_authkey})
         text_file.close()
@@ -132,8 +107,8 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         qdo_authkey = self._token
 
         data = dict(
-            executable=command + " ".join(arg_list),
-            loginenv='true',
+            executable=" ".join([command]+arg_list),
+            loginenv='false',
         )
         print data
         
