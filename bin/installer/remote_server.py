@@ -1,5 +1,5 @@
-"""
-python Endpoint for the local connector.
+"""Start point of the server side code of the smremote. Invoked my the
+interpreter.
 
 Args:
     argv[1]: files system route pointing to a file containing the method

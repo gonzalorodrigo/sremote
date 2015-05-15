@@ -1,5 +1,4 @@
-"""
-Example of client code to execute the method valid_queue_name
+"""Example of client code to execute the method valid_queue_name
 of the QDO module on a remote systems (sremote and qdo
 configured). It uses Newt as the communication connector.
 

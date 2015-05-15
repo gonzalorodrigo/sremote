@@ -1,5 +1,4 @@
-"""
-Uses Newt connector and connects to a remote host and deploys the SREMOTE
+"""Uses Newt connector and connects to a remote host and deploys the SREMOTE
 code and an environment for it. It also installs the QDO library in that
 environment.
 
