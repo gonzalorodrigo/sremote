@@ -14,8 +14,8 @@
 
 # Required for Edison, Hopper, and Carver. Will report an error message in other
 # systems.
-module load python > /dev/null
-module load virtualenv > /dev/null
+module load python
+module load virtualenv
 
 # Locates the binaries to be used.
 set python_bin=`which python`

@@ -12,8 +12,8 @@
 #   result of the execution of the function call request.
 
 # For Edison, Hopper, and Carver.
-module load python > /dev/null
-module load virtualenv > /dev/null
+module load python
+module load virtualenv
 
 set install_dir="~/.sremote"
 cd $install_dir

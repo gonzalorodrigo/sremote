@@ -114,7 +114,7 @@ class ClientNEWTConnector(remote_api.ClientChannel):
 
         data = dict(
             executable=" ".join([command]+arg_list),
-            loginenv='false',
+            loginenv='true',
         )
         print data
         
