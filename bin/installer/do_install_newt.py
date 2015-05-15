@@ -1,11 +1,13 @@
 
 import sremote.api as remote
-import sremote.connector.ssh as ssh
+import sremote.connector.newt as newt
 from sys import argv
 
 
-connector = ssh.ClientSSHConnector(argv[1])
-connector.auth(argv[2])
+connector = newt.ClientNEWTConnector(argv[1])
+if not connector.auth(argv[2], argv[3]):
+    print "Auth error", argv[2], argv[3]
+    exit()
 
 client = remote.RemoteClient(connector)
 

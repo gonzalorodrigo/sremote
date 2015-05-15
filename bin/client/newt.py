@@ -1,8 +1,3 @@
-"""Resulting remoted module. This is the version of remote_api that is executed
-in the client code.It includes the creation of the connector and the the
-invocation of the remote classes.
-"""
-
 
 import sremote.api as remote
 import sremote.connector.newt as newt

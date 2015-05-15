@@ -139,7 +139,7 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         
         results = requests.post(cmdurl, data,
                                 cookies={'newt_sessionid': qdo_authkey})
-
+        print results
         output = results.json()["output"]
         error = results.json()["error"]
         del results

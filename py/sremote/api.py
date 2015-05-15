@@ -200,7 +200,7 @@ class ClientChannel(object):
         return self.get_home_dir()+"/.sremote"
     
     def get_pwd(self):
-        dir_string =  self.execute_command("pwd")[0]
+        dir_string =  self.execute_command("/bin/pwd")[0]
         return dir_string.replace("\n", "")   
 
     
