@@ -141,41 +141,37 @@ class ClientChannel(object):
         output = self.execute_request(location, response_location)
         return self.retrieve_call_response(response_location), output
 
-    def gen_remote_response_reference(self):
-        raise Exception("Non implemented")
+    def place_call_request(self, serialized_method_call_request):
+       
+        reference_route = self.get_local_temp_file_route()
+        text_file = open(reference_route, "w")
+        text_file.write(serialized_method_call_request)
+        text_file.close()
+        remote_file_route = self.gen_remote_temp_file_route()
+        self.push_file(reference_route, remote_file_route)
+        return remote_file_route
     
     def retrieve_call_response(self, method_responde_reference):
-        raise Exception("Non implemented")
+        local_route_response = self.get_local_temp_file_route(False)
+        self.retrieve_file(method_responde_reference, local_route_response)
+        text_file = open(local_route_response, "r")
+        content = "\n".join(text_file.readlines())
+        text_file.close()
+        return content
+    def gen_remote_response_reference(self):
+        return self.gen_remote_temp_file_route(False)
     
-    def place_call_request(self, serialized_method_call_request,
-                           reference_route=None):
-        """Sends a method call request to the end point. 
-
-        Args:
-            serialized_method_call_request: serialized version of the request.
-            reference_route: if set, the reference that the endpoint should use
-            to find the request. If not, that reference will be calculated by
-            this method.
-
-        Returns:
-            reference used to store the request.
-
-        """
-        raise Exception("Non implemented")
-    def execute_request(self, method_request_reference):
-        """Invokes the endpoint so it uses the referenced method call request,
-        processes it, and executes the corresponding method.
-
-        Args:
-            method_request_reference: reference for the endpoint to find the
-            methods call request.
-
-        Returns:
-            whatever the method called returns.
-        """
-
-        raise Exception("Non implemented")
-    
+    def gen_remote_temp_file_route(self, in_file=True):
+        file_name = self.get_dir()+"/tmp/file_name.dat"
+        if not in_file:
+            file_name+=".out"
+        return file_name
+    def get_local_temp_file_route(self, in_file=True):
+        file_name = "/tmp/file_name.dat"
+        if not in_file:
+            file_name+=".out"
+        return file_name
+ 
     def copy_file(self, origin_route, dest_route):
         raise Exception("Non implemented")
     

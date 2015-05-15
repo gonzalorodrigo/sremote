@@ -8,10 +8,10 @@
     of the method to be called.
 """
 
-import sremote.connector.ssh as ssh
+import sremote.api as remote
 import sys
 
-conn =  ssh.ServerSSHConnector()
+conn =  remote.ServerChannel()
 if (sys.argv):
     file_route = sys.argv[1]
     out_file_route = sys.argv[2]

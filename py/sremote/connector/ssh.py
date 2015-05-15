@@ -4,11 +4,6 @@ import subprocess
 
 class ClientSSHConnector(remote_api.ClientChannel):
 
-    """
-    Connector for remoting functions. It relaies on executing a shell script
-    in the same directory as the code. The route to such script can be
-    configured in creation time.
-    """
     def __init__(self, hostname, interpreter_route = "interpreter.sh"):
         self._interpreter_route = interpreter_route
         self._hostname = hostname;
@@ -36,37 +31,6 @@ class ClientSSHConnector(remote_api.ClientChannel):
                                method_response_reference])
         
         return output
-
-    def place_call_request(self, serialized_method_call_request):
-       
-        reference_route = self.get_local_temp_file_route()
-        text_file = open(reference_route, "w")
-        text_file.write(serialized_method_call_request)
-        text_file.close()
-        remote_file_route = self.gen_remote_temp_file_route()
-        self.push_file(reference_route, remote_file_route)
-        return remote_file_route
-    
-    def retrieve_call_response(self, method_responde_reference):
-        local_route_response = self.get_local_temp_file_route(False)
-        self.retrieve_file(method_responde_reference, local_route_response)
-        text_file = open(local_route_response, "r")
-        content = "\n".join(text_file.readlines())
-        text_file.close()
-        return content
-    def gen_remote_response_reference(self):
-        return self.gen_remote_temp_file_route(False)
-    
-    def gen_remote_temp_file_route(self, in_file=True):
-        file_name = self.get_dir()+"/tmp/file_name.dat"
-        if not in_file:
-            file_name+=".out"
-        return file_name
-    def get_local_temp_file_route(self, in_file=True):
-        file_name = "/tmp/file_name.dat"
-        if not in_file:
-            file_name+=".out"
-        return file_name
 
     
     def push_file(self, origin_route, dest_route):
