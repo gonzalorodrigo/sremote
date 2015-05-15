@@ -122,7 +122,20 @@ class ClientChannel(object):
     This class has the responsibility of providing an interface with/from the
     end point. 
     """
+    def execute_request(self, method_request_reference, 
+                        method_response_reference):
+        print "HOLA", "/bin/csh", " ".join([self.get_dir()+"/"+self._interpreter_route, 
+                               method_request_reference, 
+                               method_response_reference])
+      
+        output= self.execute_command("/bin/csh", 
+                               [self.get_dir()+"/"+self._interpreter_route, 
+                               method_request_reference, 
+                               method_response_reference])
+        
+        return output
 
+    
 
     def place_and_execute(self, serialized_method_call_request):
         """Sends the method call request as an item that can be referenced. 
@@ -185,7 +198,10 @@ class ClientChannel(object):
         raise Exception("Non implemented")
     def get_dir(self):
         return self.get_home_dir()+"/.sremote"
-         
+    
+    def get_pwd(self):
+        dir_string =  self.execute_command("pwd")[0]
+        return dir_string.replace("\n", "")   
 
     
     
