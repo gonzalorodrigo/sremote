@@ -1,49 +1,24 @@
 """ 
-Classes to do remote Python functions calls.
+Classes to do remote Python functions calls in sremote.
 
 This code allows to call remote functions of methods that receive and return
 serializable objects. 
 
-If code is going to be remoted, the key work is to create a subclass of
-CommsChannel. That class has to have specific methods to invoke the remote
-endpoint, indicate the desired method to be executed, pass the input arguments,
-retrieve the result, and interpret it. 
-
-To send a remote call, a client needs to create a RemoteClient with the
-adequate comms_client. Then do_remote_call is invoked with the name of the
-methods and a list of the arguments.
-
-qdo_remote_api_sim is an example: the communication channel are files on the
-file system. It implements 
-    - place_call_request: encodes and serializes the method name and
-      arguments. Puts them in a file in the file system.
-    - process_call_request: invoked by the end point when a request is received.
-      it deserializes the request and invokes que code.
-    - end point: is a shell file that is invoked by using subprocess. It
-      receives the method call request file location as an argument. Then,
-      it calls a the process_call_request, with the QDO object.
-    - retrive_call_request: it reads the std_out of the end point execution,
-      deserializes and extracts the result.
-
-In the example qdo_remote_api_sim: 
-    - qdo_interpreter.sh is the end point.
-    - qdo_remote_api_sim.py defines the comms_client to use the end point.
-    - qdo_remote_server.py is called by the end point to call the remote method.
-    - test_qdo_remote.py is a sample usage of how everything is invoked.
-    - method call requests are stored as files. The references to them are just
-      file system routes. 
 """
 
 import sremote.tools as remote
 
 
 class RemoteClient(object):
-
     """
-    Base class for the client side of the remoting functions
+    Base class for the client side of the remoting functions including:
+    - Deployment of the the sremote environment in the remote host.
+    - Installation of the sremote library in the remote hosts's environemnt.
+    - Installation of python modules in the remote hotst's sremote environment.
+    - Call from the client side to execute a method remotely.
 
-    During creation it receives a comms_client that will communicate with the
-    end point. 
+    During creation it receives a ClientChannel object includes the information
+    about the remote host and a communication protocol.
     """
 
     def __init__(self, comms_client):
@@ -55,16 +30,25 @@ class RemoteClient(object):
         self._comms_client = comms_client
 
     def do_remote_call(self, module_name, method_name, args=[]):
-        """ Uses _comms.client to send a request to execute method_name with
-        args.
+        """ 
+        Uses _comms_client to send a request to execute
+        module_name.method_name(*args) in the remote host. It asumes that
+        module_name is installed in the sremote environemnt of the remote 
+        host.
 
         Args:
-            method_name: name of the method to be executed.
-            args: list with the arguments.
+            module_name: string with the name of the module which method will be
+            executed.
+            method_name: string with name of the method to be executed.
+            args: list containing the argument values.
         """
+        # Encondes and sends the call request to the remote host and calls the
+        # interpreter to execute. Then the response is retrieved in a 
+        # serialized format..
         response_encoded, std_out = self._comms_client.place_and_execute(
             remote.encode_call_request(module_name, method_name,
                                        args))
+        
         success, response = remote.decode_call_response(response_encoded)
         if (success):
             return response, std_out
@@ -72,12 +56,23 @@ class RemoteClient(object):
             raise Exception(
                 "Error executing " +module_name+"."+ method_name + "\n  Output:"
                 +str(std_out))
-                 #+ str(std_out) + "\n  Error:" + str(std_err))
 
         
     def do_bootstrap_install(self):
+        """
+        Uses _comms_client to configure the sremote environment in the remote
+        machine including:
+        - Creation of a ~/.sremote folder. Actual folder is defined by the 
+          chosen ClientChannel. This folder will contain the scripts and
+          python environment needed by sremote.
+        - Deployment of the setup_bootstrap.sh, interpreter.sh, and
+          remote_server.py script.
+        - Remote call of the setup_bootstrap.sh script: Does environment 
+          configuration.
+        - Remote installation of the sremote library.
+        
+        """
         install_dir = self._comms_client.get_dir()
-        print "INSTALLDIR", install_dir
         self._comms_client.execute_command("mkdir", ["-p", install_dir])
         if not self._comms_client.push_file("./setup_bootstrap.sh", 
                                    install_dir+"/setup_bootstrap.sh"):
@@ -85,11 +80,11 @@ class RemoteClient(object):
             return False
         if not self._comms_client.push_file("./interpreter.sh", 
                                install_dir+"/interpreter.sh"):
-            print "Error placing interpreter script"
+            print "Error placing csh interpreter script"
             return False
         if not self._comms_client.push_file("./remote_server.py", 
                                install_dir+"/remote_server.py"):
-            print "Error placing interpreter script"
+            print "Error placing python interpreter script."
             return False
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
                             [install_dir+"/setup_bootstrap.sh"])
@@ -99,6 +94,22 @@ class RemoteClient(object):
         return True
     
     def do_install_git_module(self, git_url, branch=None):
+        """
+        Installs a Python library in the remote host's sremote environment. The
+        source of this library is a git repository. It takes two steps:
+        - Deployment of the install_git_module.sh script.
+        - Remote Invocation of the script that will download the library and
+          install it in the environment.
+        
+        Args:
+            git_url: a string with the http(s) url of the repository. This
+            installer assumes that there is a py folder in the repo with a
+            setup.py script.
+            branch: a string with the name of the branch to install. If not set,
+            master branch is installed.
+        
+        Returns: true if installation successes. 
+        """
         install_dir = self._comms_client.get_dir()
         if not self._comms_client.push_file("./install_git_module.sh", 
                                    install_dir+"/install_git_module.sh"):
@@ -116,18 +127,40 @@ class RemoteClient(object):
 
 
 class ClientChannel(object):
-
-    """Base class for the communication in this remoting schema. 
-
-    This class has the responsibility of providing an interface with/from the
-    end point. 
     """
+    A ClientChannel is an abstract class interact with a remote host sremote
+    environment (if installed). It provides implementation to: Place a method
+    call request in a remote host and invoke the sremote interpreter to execute,
+    and retrieve the result. This implementation realies on the presence of the
+    sremote iterpreter script in the remote host.
+    
+    A class implementing ClientChanel shouldn implement method to:
+    - Copy a file from the remote host to the local host (retrieve).
+    - Copy a file from the local host to the remote host (push).
+    - Execute a command in the remote host.
+    - Detect the home directory of the user used to access the remote user.
+
+    """
+    
     def execute_request(self, method_request_reference, 
                         method_response_reference):
-        print "HOLA", "/bin/csh", " ".join([self.get_dir()+"/"+self._interpreter_route, 
-                               method_request_reference, 
-                               method_response_reference])
-      
+        """Invokes the remote interpreter to execute a method request.
+        
+        Args:
+            method_request_reference: string with the absolute file route
+            pointing  to a file present in the remote file system. This file
+            contains the serialized version of a method call request.
+            mothod_response_reference: string with absolute file route pointing
+            to a file in a existing remote host directory. The result of
+            executing the call request will be stored in that file in a
+            serialized format.
+            format
+        
+        Returns: a string containing the standard output generated by the
+        invocation of the interpreter.
+            
+        """
+        
         output= self.execute_command("/bin/csh", 
                                [self.get_dir()+"/"+self._interpreter_route, 
                                method_request_reference, 
@@ -136,18 +169,19 @@ class ClientChannel(object):
         return output
 
     
-
+    # Implemented methods
     def place_and_execute(self, serialized_method_call_request):
-        """Sends the method call request as an item that can be referenced. 
-        Invokes the endpoint with that reference so it processes the
-        call. 
+        """Places method call request in the remote host, executes it, 
+        retrives the serialized content of the response.
 
         Args:
             serialized_method_call_request: serialized versions of the method
             call request.
 
-        Returns: 
-            reference to the serialeized method request.
+        Returns:  a string containing the serialized version of the method
+        response geneterad by the execition of serielized_method_call_request.
+        Also returns a string with  standard output of the execution of the
+        remote interpreter.
         """
         response_location = self.gen_remote_response_reference()
         location = self.place_call_request(serialized_method_call_request)
@@ -155,6 +189,15 @@ class ClientChannel(object):
         return self.retrieve_call_response(response_location), output
 
     def place_call_request(self, serialized_method_call_request):
+        """Places a serialized method call request in the remote host.
+        
+        Args:
+            serialized_method_call_request: string containing the serialized
+            version of the request.
+        
+        Returns: a string with a valid remote file system route to the file
+        where the request has been placed.
+        """
        
         reference_route = self.get_local_temp_file_route()
         text_file = open(reference_route, "w")
@@ -165,6 +208,15 @@ class ClientChannel(object):
         return remote_file_route
     
     def retrieve_call_response(self, method_responde_reference):
+        """Retrieves a file from the remote host containing a method call
+        response, and returns its content.
+        
+        Args: 
+            method_responde_reference: string with a value remote file system
+            file route. It points to a file containing a method call response.
+        
+        Returns: string with the content of the remote pointed file.  
+        """
         local_route_response = self.get_local_temp_file_route(False)
         self.retrieve_file(method_responde_reference, local_route_response)
         text_file = open(local_route_response, "r")
@@ -172,55 +224,105 @@ class ClientChannel(object):
         text_file.close()
         return content
     def gen_remote_response_reference(self):
+        """Returns a string with a valid remote filesystem route where a
+        response will be stored."""
         return self.gen_remote_temp_file_route(False)
     
     def gen_remote_temp_file_route(self, in_file=True):
+        """Returns a string with a remote  flesystem route where a
+        temporary can be stored.
+        Args:
+            in_file: if true the file name will be appended .out
+        """
         file_name = self.get_dir()+"/tmp/file_name.dat"
         if not in_file:
             file_name+=".out"
         return file_name
     def get_local_temp_file_route(self, in_file=True):
+        """Returns a string with a local filseystem route where a file
+        can be stored.
+        
+        Args:
+            in_file: if true the file name will be appended .out"""
         file_name = "/tmp/file_name.dat"
         if not in_file:
             file_name+=".out"
         return file_name
  
-    def push_file(self, origin_route, dest_route):
-        raise Exception("Non implemented")
-    
-    def retrieve_file(self, origing_route, dest_route):
-        raise Exception("Non implemented")
-    
-    def execute_command(self, command, arg_list=[]):
-        raise Exception("Non implemented")
-    
-    def get_home_dir(self):
-        raise Exception("Non implemented")
     def get_dir(self):
+        """Returns a string with the remote file system location of the sremote
+        environment."""
         return self.get_home_dir()+"/.sremote"
     
     def get_pwd(self):
+        """Connects to the remote server and detects the user default after
+        login directory."""
         dir_string =  self.execute_command("/bin/pwd")[0]
         return dir_string.replace("\n", "")   
+ 
+    # OS and comms channel dependant methods to be implemented by the concrete
+    # implementations of the classs.
+    def push_file(self, origin_route, dest_route):
+        """Copies a file from the local to the remote host
+        Args:
+            origin_route: string with a valid local filesystem file route
+            pointing to the file to be copied.
+            dest_reoute: string with a valid remote filesystem file route
+            pointing to the where the file should be copied.
+        Returns: True if successful.
+        """
+        raise Exception("Non implemented")
+    
+    def retrieve_file(self, origing_route, dest_route):
+        """Copies a file from the remote to the local host
+        Args:
+            origin_route: string with a valid remote filesystem file route
+            pointing to the file to be copied.
+            dest_reoute: string with a valid local filesystem file route
+            pointing to the where the file should be copied.
+        Returns: True if successful.
+        """
+        raise Exception("Non implemented")
+    
+    def execute_command(self, command, arg_list=[]):
+        """Executes a command in the remote host as a user. It is executed
+        in the context of the default after login directory of the user.
+        
+        Args:
+            Command: executable to be invoked.
+            arg_list: List of the arguments to be passed to the command.
+        """
+        raise Exception("Non implemented")
+    
+    def get_home_dir(self):
+        """Retrieves the home directory of the user that is used to connect
+        to the remote host."""
+        raise Exception("Non implemented")
+    
 
     
     
 class ServerChannel(object):    
+    """This class implements the server side of the sremote library.  There is
+    no need of specific implementation like on the client side. This code
+    receives request and return resposnes throguh files.
     
+    """
     def process_call_request(self, method_call_request_pointer,
                              method_response_pointer):
-        """Executes a method of target_obj and returns its result encoded and
-        serialized as a call response. This method is executed in the end point. 
-
-
+        """Executes a method of and returns its result encoded and
+        serialized as a call response. This method is called by the interpreter. 
         Args:
-            targe_obj: object whose method will be executed.
-            method_call_request_pointer: reference to find the method call
-            request. It is retrieved, deserialized and decoded. 
+            method_call_request_pointer: string with a reference to file
+            containing a method call request. It is retrieved, deserialized and
+            decoded. 
+            method_response_pointer: string with a local (to the remote host)
+            filesystem location where the serialized version of the method call
+            response should be stored.
 
         Returns:
-            serialized encoded call result object, containing what the executed
-            method of target_obj returned.
+            string with the serialized encoded call result object, containing
+            what the executed method returned.
         """
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
@@ -234,13 +336,19 @@ class ServerChannel(object):
         
 
     def retrieve_call_request(self, method_request_reference):
+        """Returns the contend of a file pointed by the
+        method_request_reference."""
         text_file = open(method_request_reference, "r")
         content = "\n".join(text_file.readlines())
         text_file.close()
         return content
     def store_call_response(self, reference_route, content):
+        """Stores the string content in a reference_route in the local
+        location reference_route."""
         text_file = open(reference_route, "w")
         text_file.write(content)
         text_file.close()
     def return_error(self):
+        """Returns a tring with the serialised version of failed method
+        response.""" 
         return remote.encode_call_response({}, False)

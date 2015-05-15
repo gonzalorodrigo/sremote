@@ -1,11 +1,14 @@
-"""python Endpoint for the local connector
+"""
+python Endpoint for the local connector.
 
-    Args:
-        argv[1]: files system route pointing to a file containing the method
-        call request.
-    
-    Std_out: serialized version of the return object summarizing the execution
-    of the method to be called.
+Args:
+    argv[1]: files system route pointing to a file containing the method
+    call request.
+    argv[2]: files system route pointing  where the request response
+    shoudl be written to.
+
+Std_out: serialized version of the return object summarizing the execution
+of the method to be called.
 """
 
 import sremote.api as remote

@@ -4,7 +4,7 @@ of the QDO module on a remote systems (sremote and qdo
 configured). It uses SSH as the communication connector.
 
 Invocation:
-python newt.py (edison,hopper,carver) username pass
+python newt.py full_hostname username password
 """
 
 import sremote.api as remote

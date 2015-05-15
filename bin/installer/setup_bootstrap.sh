@@ -1,12 +1,28 @@
 #!/bin/csh
-#This script may not work on Edison, Hopper, or Carver.
-module load python
-module load virtualenv
+#
+# Script executed to configure a host to execute remote calls for the sremote
+# package. This file is deployed on the  remote host at ~/.sremote by the
+# sremote bootstrap mechanism.
+# 
+# It creates the python execution environment in the context of a user in
+# a host. It requires python an easy_install to be present and accesible.
+#
+# The environment cretion implies:
+# - Check if pip is present. It not install it
+# - Check if virtualenv is present. If not install it.
+# - Creacte a python virtual environemnt for the sremote calls.
 
+# Required for Edison, Hopper, and Carver. Will report an error message in other
+# systems.
+module load python > /dev/null
+module load virtualenv > /dev/null
+
+# Locates the binaries to be used.
 set python_bin=`which python`
 set git_bin=`which git`
 set easy_install_bin=`which easy_install`
 set virtualenv_bin=`which virtualenv`
+
 set install_dir="~/.sremote"
 cd $install_dir
 
@@ -27,20 +43,3 @@ if ($? == 1) then
 endif
 
 $virtualenv_bin env
-
-# source env/bin/activate.csh
-
-# set python_bin=`which python`
-# echo "Using python: ${python_bin}"
-# #pip install -r requirements.txt
-
-# if (-d remote_libs_repo ) then
-# 	echo "Cleaning up previous copy of remote lib"
-#     rm -rf remote_libs_repo
-# endif
-
-# $git_bin clone https://github.com/gonzalorodrigo/qdo_interpreter.git remote_libs_repo
-# cd remote_libs_repo
-# $git_bin checkout modular
-# cd py
-# ${python_bin} setup.py install

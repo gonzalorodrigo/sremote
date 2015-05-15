@@ -1,3 +1,7 @@
+"""Implementation of the sremote.api.ClientChannel class that uses SSH as
+the communication channel. It uses scp and direct ssh execution."""
+
+
 import sremote.api as remote_api
 import subprocess
 
@@ -7,9 +11,12 @@ class ClientSSHConnector(remote_api.ClientChannel):
     def __init__(self, hostname, interpreter_route = "interpreter.sh"):
         self._interpreter_route = interpreter_route
         self._hostname = hostname;
-    
 
     def auth(self, username):
+        """Auth method. It stores the username. Authenticaion doesn no
+        ocurr until an actual operation is executed. It no ssh key is
+        configured in th client, future operations will ask for password.
+        """
         self._username = username
         self._home_dir = self.get_pwd()
  

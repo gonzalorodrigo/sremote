@@ -1,3 +1,7 @@
+"""Implementation of the sremote.api.ClientChannel class that uses Newet as
+the communication channel. Newt is a REST api to interact with the NERSC
+systems."""
+
 import sremote.api as remote_api
 import requests
 
@@ -12,14 +16,16 @@ class ClientNEWTConnector(remote_api.ClientChannel):
     
     def auth(self, username, password=None, token=None):
         """Auth method. It performs auth operation against the newt server and
-        stores the token for futher use.
+        stores the token for futher use. It also detects the users login dir
+        and stores it.
 
         Args:
-            username: user to be auth as. It is stored for future operations.
-            password: if set, the auth process is executed and token retrieved.
-            Token is stored for further operations.
-            token: if password not set, this value is stored as the token for
-            future operations.
+            username: string with user to be auth as. It is stored for future
+            operations.
+            password: string, if set, the auth process is executed and token
+            retrieved. Token is stored for further operations.
+            token: string, if password not set, this value is stored as the
+            token for future operations.
 
         Returns:
             True, if auth is successful.
@@ -55,7 +61,7 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         
     
     def status(self):
-        """Checks if auth is successful"""
+        """Returns true if the self._token is valid and the code can login."""
         cmdurl = "https://newt.nersc.gov/newt/login/"
         qdo_authkey = self._token
 
