@@ -26,8 +26,9 @@ class ClientSSHConnector(remote_api.ClientChannel):
 
     def execute_request(self, method_request_reference, 
                         method_response_reference):
-        print "HOLA", "/bin/csh", [self.get_dir()+"/"+self._interpreter_route, 
-                               method_request_reference]
+        print "HOLA", "/bin/csh", " ".join([self.get_dir()+"/"+self._interpreter_route, 
+                               method_request_reference, 
+                               method_response_reference])
       
         output= self.execute_command("/bin/csh", 
                                [self.get_dir()+"/"+self._interpreter_route, 

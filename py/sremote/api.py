@@ -62,16 +62,17 @@ class RemoteClient(object):
             method_name: name of the method to be executed.
             args: list with the arguments.
         """
-        std_out, std_err, status = self._comms_client.place_and_execute(
+        response_encoded, std_out = self._comms_client.place_and_execute(
             remote.encode_call_request(module_name, method_name,
                                        args))
-        success, response = remote.decode_call_response(std_out)
+        success, response = remote.decode_call_response(response_encoded)
         if (success):
-            return response
+            return response, std_out
         else:
             raise Exception(
                 "Error executing " +module_name+"."+ method_name + "\n  Output:"
-                 + str(std_out) + "\n  Error:" + str(std_err))
+                +str(std_out))
+                 #+ str(std_out) + "\n  Error:" + str(std_err))
 
         
     def do_bootstrap_install(self):
@@ -214,7 +215,7 @@ class ServerChannel(object):
         print call_request_serialized, target_obj_name
         reponse_obj = remote.call_method_object(target_obj_name, command_name, args)
         content = remote.encode_call_response(reponse_obj, True)
-        self.store_call_response(content, method_response_pointer)
+        self.store_call_response(method_response_pointer, content)
         return content
         
 
@@ -223,6 +224,7 @@ class ServerChannel(object):
          This method is executed in the end point  
         """
         raise Exception("Non implemented")
-
+    def store_call_response(self, reference_route, content):
+        raise Exception("Non implemented")
     def return_error(self):
         return remote.encode_call_response({}, False)
