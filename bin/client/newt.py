@@ -1,7 +1,7 @@
 """
 Example of client code to execute the method valid_queue_name
 of the QDO module on a remote systems (sremote and qdo
-configured). It uses Newt as the communication protocol.
+configured). It uses Newt as the communication connector.
 
 Invocation:
 python newt.py (edison,hopper,carver) username pass
@@ -18,7 +18,7 @@ def valid_queue_name(value):
     client = remote.RemoteClient(connector)
     return_value, out = client.do_remote_call("qdo", 
                          "valid_queue_name", args=[value])
-    #print out
+    print out
     return return_value
 
 

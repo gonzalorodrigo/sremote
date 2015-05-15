@@ -1,8 +1,11 @@
-"""Resulting remoted module. This is the version of remote_api that is executed
-in the client code.It includes the creation of the connector and the the
-invocation of the remote classes.
 """
+Example of client code to execute the method valid_queue_name
+of the QDO module on a remote systems (sremote and qdo
+configured). It uses SSH as the communication connector.
 
+Invocation:
+python newt.py (edison,hopper,carver) username pass
+"""
 
 import sremote.api as remote
 import sremote.connector.ssh as ssh
@@ -25,7 +28,7 @@ def valid_queue_name(value):
 
     client = remote.RemoteClient(connector)
     return_value, out = client.do_remote_call("qdo", "valid_queue_name", args=[value])
-    #print out
+    print out
     return return_value
 
 

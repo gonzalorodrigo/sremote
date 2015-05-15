@@ -16,7 +16,7 @@ composed of:
   
 There are two implementations of the connectors:
 - SSH: using ssh execution and scp.
-- Newt: using NERSC newt api to access Edison, Hopper, and Carver.
+- Newt: using NERSC Newt api to access Edison, Hopper, and Carver.
 
 ### Instalation
 The installation process sets up the a user account of the remote
@@ -34,3 +34,30 @@ Code using remote calls only have to use calls like the ones
 present in the bin/client code files. 
 
 ### Communication protocol
+Independently of the connector used, these are the steps to execute
+a function of a Python module hosted in a remote host.
+- Module name, function name and arguments are set in a call request
+  object. This object is serialized and copied on a temporary file
+  locally.
+- The connector is used to copy the request object file to the remote
+  host.
+- The connector is used to invoke the interpreter.sh in the remote
+  host. It receives two input arguments: 
+  - The filesystem route where the request object file is located.
+  - A filesystem route where the response of the method should be
+    stored.
+  The local code waits for the interpreter to end.
+- interpreter.sh: (in the remote machine)
+  - Reads the request object file and deserializes its
+    content. The content is interpreted: the module invoked and the
+    target functions is called with the indicated input values. The
+    return value and standard output of the code is recorded.
+  - Constructs a method response object with the return value and
+    standard output. Serializes the object and stores it in the
+    files ystem at the route pointed as second argument of the
+    interpreter.
+  - Finishes.
+- Once the interpreter has finished, the connector is used to retrieve
+  the method response file from the remote host.
+- The content is read, deserialized and the return value returned.
+
