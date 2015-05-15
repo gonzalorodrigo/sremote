@@ -24,12 +24,17 @@ class ClientSSHConnector(remote_api.ClientChannel):
         return dir_string.replace("\n", "")
         
 
-    def execute_request(self, method_request_reference):
+    def execute_request(self, method_request_reference, 
+                        method_response_reference):
         print "HOLA", "/bin/csh", [self.get_dir()+"/"+self._interpreter_route, 
                                method_request_reference]
-        return self.execute_command("/bin/csh", 
+      
+        output= self.execute_command("/bin/csh", 
                                [self.get_dir()+"/"+self._interpreter_route, 
-                               method_request_reference])
+                               method_request_reference, 
+                               method_response_reference])
+        
+        return output
 
     def place_call_request(self, serialized_method_call_request):
        
@@ -40,11 +45,27 @@ class ClientSSHConnector(remote_api.ClientChannel):
         remote_file_route = self.gen_remote_temp_file_route()
         self.push_file(reference_route, remote_file_route)
         return remote_file_route
-
-    def gen_remote_temp_file_route(self):
-        return self.get_dir()+"/tmp/file_name.dat"
-    def get_local_temp_file_route(self):
-        return "/tmp/file_name.dat"
+    
+    def retrieve_call_response(self, method_responde_reference):
+        local_route_response = self.get_local_temp_file_route(False)
+        self.retrieve_file(method_responde_reference, local_route_response)
+        text_file = open(local_route_response, "r")
+        content = "\n".join(text_file.readlines())
+        text_file.close()
+        return content
+    def gen_remote_response_reference(self):
+        return self.gen_remote_temp_file_route(False)
+    
+    def gen_remote_temp_file_route(self, in_file=True):
+        file_name = self.get_dir()+"/tmp/file_name.dat"
+        if not in_file:
+            file_name+=".out"
+        return file_name
+    def get_local_temp_file_route(self, in_file=True):
+        file_name = "/tmp/file_name.dat"
+        if not in_file:
+            file_name+=".out"
+        return file_name
 
     
     def push_file(self, origin_route, dest_route):
@@ -89,7 +110,12 @@ class ServerSSHConnector(remote_api.ServerChannel):
     def retrieve_call_request(self, method_request_reference):
         text_file = open(method_request_reference, "r")
         content = "\n".join(text_file.readlines())
+        text_file.close()
         return content
+    def store_call_response(self, reference_route, content):
+        text_file = open(reference_route, "w")
+        text_file.write(content)
+        text_file.close()
 
 
 

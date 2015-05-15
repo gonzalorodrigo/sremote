@@ -49,6 +49,7 @@ def call_method_object_command(call_request):
 def call_method_object(module_name, method_name, args):
     """Executes obj.method_name(*args) and returns what ever it returns."""
     obj = __import__(module_name, fromlist=[''])
+    print obj
     method = getattr(obj, method_name)
     output = method(*args)
     return output

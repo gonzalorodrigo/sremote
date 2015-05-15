@@ -14,6 +14,7 @@ import sys
 conn =  ssh.ServerSSHConnector()
 if (sys.argv):
     file_route = sys.argv[1]
-    print conn.process_call_request(file_route)
+    out_file_route = sys.argv[2]
+    print conn.process_call_request(file_route, out_file_route)
 else:
     print conn.return_error()

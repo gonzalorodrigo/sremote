@@ -135,11 +135,17 @@ class ClientChannel(object):
         Returns: 
             reference to the serialeized method request.
         """
+        response_location = self.gen_remote_response_reference()
         location = self.place_call_request(serialized_method_call_request)
-        return self.execute_request(location)
+        output = self.execute_request(location, response_location)
+        return self.retrieve_call_response(response_location), output
 
-
-
+    def gen_remote_response_reference(self):
+        raise Exception("Non implemented")
+    
+    def retrieve_call_response(self, method_responde_reference):
+        raise Exception("Non implemented")
+    
     def place_call_request(self, serialized_method_call_request,
                            reference_route=None):
         """Sends a method call request to the end point. 
@@ -186,7 +192,8 @@ class ClientChannel(object):
     
 class ServerChannel(object):    
     
-    def process_call_request(self, method_call_request_pointer):
+    def process_call_request(self, method_call_request_pointer,
+                             method_response_pointer):
         """Executes a method of target_obj and returns its result encoded and
         serialized as a call response. This method is executed in the end point. 
 
@@ -204,8 +211,12 @@ class ServerChannel(object):
             method_call_request_pointer)
         target_obj_name, command_name, args = remote.decode_call_request(
             call_request_serialized)
+        print call_request_serialized, target_obj_name
         reponse_obj = remote.call_method_object(target_obj_name, command_name, args)
-        return remote.encode_call_response(reponse_obj, True)
+        content = remote.encode_call_response(reponse_obj, True)
+        self.store_call_response(content, method_response_pointer)
+        return content
+        
 
     def retrieve_call_request(self, method_request_reference):
         """Retrieves a method_request_reference without transfomring it.
