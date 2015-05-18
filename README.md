@@ -61,3 +61,9 @@ a function of a Python module hosted in a remote host.
   the method response file from the remote host.
 - The content is read, deserialized and the return value returned.
 
+Authors
+=======
+
+qdo is developed by Gonzalo Rodrigo at Lawrence Berkeley National Lab,
+with additional contributions from Stephen Bailey and Shreyas Cholia.  It is
+released under the BSD 3-clause open source licence, see LICENSE.
