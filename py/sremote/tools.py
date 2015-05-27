@@ -21,6 +21,7 @@ The method response is a dictionary with two times:
 
 """
 import json
+import types
 
 COMMAND_MODULE = "module"
 COMMAND_TYPE = "command"
@@ -51,7 +52,12 @@ def call_method_object(module_name, method_name, args):
     obj = __import__(module_name, fromlist=[''])
     print obj
     method = getattr(obj, method_name)
-    output = method(*args)
+    if isinstance(args, types.ListType):
+        output = method(*args)
+    elif isinstance(args, types.DictType):
+        output = method(**args)
+    else:
+        raise Exception("Wrong arguments type for method: "+str(args))
     return output
 
 def process_remote_call(request_string):

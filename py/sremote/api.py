@@ -7,7 +7,8 @@ serializable objects.
 """
 
 import sremote.tools as remote
-
+import time
+import types
 
 class RemoteClient(object):
     """Base class for the client side of the remoting functions including:
@@ -38,13 +39,18 @@ class RemoteClient(object):
             module_name: string with the name of the module which method will be
                 executed.
             method_name: string with name of the method to be executed.
-            args: list containing the argument values.
+            args: list or dict containing the argument values. Dict is desired
+                for calling methods with default values.
         
         Returns:
             If successes: response object and a string with the  std_out of
             the execution. Raises an exception otherwise.
             
         """
+        if (not isinstance(args, types.ListType) and 
+            not isinstance(args, types.DictType)):
+            raise Exception("Wrong type for args, expected list or dict, found "
+                            + str(type(args)))
         # Encondes and sends the call request to the remote host and calls the
         # interpreter to execute. Then the response is retrieved in a 
         # serialized format..

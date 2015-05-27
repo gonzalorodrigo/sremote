@@ -7,23 +7,27 @@ python newt.py (edison|hopper|carver) username password
 """
 import sremote.api as remote
 import sremote.connector.newt as newt
+import time
 from sys import argv
 
 def valid_queue_name(value):
 
-    # Creation of a connector with Newt capacities,
-    connector = newt.ClientNEWTConnector(argv[1])
-    # Authentication, this call connects remotely and retrieves the default
-    # after login directory.
-    connector.auth(argv[2], argv[3])
-
-    # Client class that uses the connector to do the remote calls.
-    client = remote.RemoteClient(connector)
+    start_t = time.time()
     return_value, out = client.do_remote_call("qdo", 
                          "valid_queue_name", args=[value])
+    run_time = time.time()-start_t
     print out
+    print "Total Execution time of call valid_queue_name (s):", run_time
     return return_value
 
+# Creation of a connector with Newt capacities,
+connector = newt.ClientNEWTConnector(argv[1])
+# Authentication, this call connects remotely and retrieves the default
+# after login directory.
+connector.auth(argv[2], argv[3])
+
+# Client class that uses the connector to do the remote calls.
+client = remote.RemoteClient(connector)
 
 print valid_queue_name("juanito")
 print valid_queue_name("juanito!")
