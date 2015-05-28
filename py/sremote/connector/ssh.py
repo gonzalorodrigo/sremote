@@ -12,12 +12,18 @@ class ClientSSHConnector(remote_api.ClientChannel):
         self._interpreter_route = interpreter_route
         self._hostname = hostname;
 
-    def auth(self, username):
-        """Auth method. It stores the username. Authenticaion doesn no
-        ocurr until an actual operation is executed. It no ssh key is
-        configured in th client, future operations will ask for password."""
+    def auth(self, username, password=None, token=None):
+        """Auth method. It stores the username. Authenticaion does not
+        occur until an actual operation is executed. It no ssh key is
+        configured in the client, future operations will ask for password."""
         self._username = username
         self._home_dir = self.get_pwd()
+        self._token = username
+        return self.status()
+    
+    def status(self):
+        """Returns true if the username could login"""
+        return self._home_dir!=""
  
     def push_file(self, origin_route, dest_route):
         command_list =  ["scp", origin_route, self._username + "@" +
