@@ -21,14 +21,9 @@ if (-f /etc/profile.d/modules.csh) then
 	module load virtualenv
 endif 
 
-#module load python/2.7.3
-#source /project/projectdirs/dessn/atc/venv/bin/activate.csh
-
 #module load python
 set install_dir="~/.sremote"
 cd $install_dir
-echo "source activate"
 source env/bin/activate.csh
 set python_bin=`which python`
-echo "python"
 python remote_server.py "${1}" "${2}"
