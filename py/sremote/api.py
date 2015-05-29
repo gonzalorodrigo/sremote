@@ -5,9 +5,10 @@ This code allows to call remote functions of methods that receive and return
 serializable objects. 
 
 """
-
+import os
+from pkgutil import get_loader
 import sremote.tools as remote
-import time
+import sys
 import types
 
 class RemoteClient(object):
@@ -85,15 +86,18 @@ class RemoteClient(object):
         """
         install_dir = self._comms_client.get_dir()
         self._comms_client.execute_command("mkdir", ["-p", install_dir])
-        if not self._comms_client.push_file("./setup_bootstrap.sh", 
-                                   install_dir+"/setup_bootstrap.sh"):
+        if not self._comms_client.push_file(
+                                self.get_resource_route("setup_bootstrap.sh"), 
+                                install_dir+"/setup_bootstrap.sh"):
             print "Error placing installation script."
             return False
-        if not self._comms_client.push_file("./interpreter.sh", 
-                               install_dir+"/interpreter.sh"):
+        if not self._comms_client.push_file(
+                                self.get_resource_route("interpreter.sh"), 
+                                install_dir+"/interpreter.sh"):
             print "Error placing csh interpreter script"
             return False
-        if not self._comms_client.push_file("./remote_server.py", 
+        if not self._comms_client.push_file(
+                               self.get_resource_route("remote_server.py"), 
                                install_dir+"/remote_server.py"):
             print "Error placing python interpreter script."
             return False
@@ -122,8 +126,9 @@ class RemoteClient(object):
             true if installation successes. 
         """
         install_dir = self._comms_client.get_dir()
-        if not self._comms_client.push_file("./install_git_module.sh", 
-                                   install_dir+"/install_git_module.sh"):
+        if not self._comms_client.push_file(
+                            self.get_resource_route("install_git_module.sh"), 
+                            install_dir+"/install_git_module.sh"):
             print "Error placing installation script."
             return False
         branch_arg = []
@@ -134,7 +139,24 @@ class RemoteClient(object):
                         branch_arg)
         print "Install result:", rc, output, err
         return True
+    
+    def get_resource_route(self, resource, package = "sremote.res"):
+        # copied from pkg_util.get_data()
         
+        loader = get_loader(package)
+        if loader is None or not hasattr(loader, 'get_data'):
+            return None
+        mod = sys.modules.get(package) or loader.load_module(package)
+        if mod is None or not hasattr(mod, '__file__'):
+            return None
+    
+        # Modify the resource name to be compatible with the loader.get_data
+        # signature - an os.path format "filename" starting with the dirname of
+        # the package's __file__
+        parts = resource.split('/')
+        parts.insert(0, os.path.dirname(mod.__file__))
+        resource_name = os.path.join(*parts)
+        return resource_name
 
 
 class ClientChannel(object):

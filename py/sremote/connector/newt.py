@@ -58,6 +58,11 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         else:
             self._token = token
             self._home_dir = self.get_pwd()
+            print self._home_dir
+            if self._home_dir!=None:
+                return True
+            else:
+                return False
         
     
     def status(self):
