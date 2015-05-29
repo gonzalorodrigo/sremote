@@ -85,7 +85,7 @@ class RemoteClient(object):
             True if success.
         """
         install_dir = self._comms_client.get_dir()
-        self._comms_client.execute_command("mkdir", ["-p", install_dir])
+        self._comms_client.execute_command("/bin/mkdir", ["-p", install_dir])
         if not self._comms_client.push_file(
                                 self.get_resource_route("setup_bootstrap.sh"), 
                                 install_dir+"/setup_bootstrap.sh"):
@@ -294,7 +294,7 @@ class ClientChannel(object):
         """Connects to the remote server and detects the user default after
         login directory."""
         dir_string =  self.execute_command("/bin/pwd")[0]
-        return dir_string.replace("\n", "")   
+        return dir_string.replace("\n", "").replace("\r","")
  
     # OS and comms channel dependant methods to be implemented by the concrete
     # implementations of the classs.
