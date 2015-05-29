@@ -28,7 +28,7 @@ cd $install_dir
 
 
 which virtualenv
-if ($? == 1) then
+if ($status == 1) then
 	echo "Virutalenv is not available, installing"
 	mkdir pythonuserbase
 	setenv PYTHONUSERBASE "./pythonuserbase"
