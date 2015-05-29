@@ -14,7 +14,7 @@ setup(
     version="0.1",
     # install_requires=[s.strip() for s in open("requirements.txt")],
     extras_require={},
-    # package_data={"": ["*.json"]},
+    package_data={"sremote": ["res/*.*"]},
     author="Gonzalo Rodrigo",
     author_email="GPRodrigoAlvarez@lbl.gov",
     maintainer="Gonzalo Rodrigo",
