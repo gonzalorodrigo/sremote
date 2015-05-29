@@ -34,10 +34,10 @@ def valid_queue_name_dict(value):
 connector = newt.ClientNEWTConnector(argv[1])
 # Authentication, this call connects remotely and retrieves the default
 # after login directory.
-connector.auth(argv[2], argv[3])
-
-# Client class that uses the connector to do the remote calls.
-client = remote.RemoteClient(connector)
-
-print valid_queue_name("juanito")
-print valid_queue_name_dict("juanito!")
+if connector.auth(argv[2], argv[3]):
+    # Client class that uses the connector to do the remote calls.
+    client = remote.RemoteClient(connector)
+    print valid_queue_name("juanito")
+    print valid_queue_name_dict("juanito!")
+else:
+    print "Error in auth!"

@@ -12,12 +12,23 @@
 #   result of the execution of the function call request.
 
 # For Edison, Hopper, and Carver.
-module load python
-module load virtualenv
 
+setenv PATH /bin:/usr/bin:/sbin:/usr/sbin:$PATH
+if (-f /etc/profile.d/modules.csh) then
+	source /etc/profile.d/modules.csh
+	module load usg-default-modules
+	module load python
+	module load virtualenv
+endif 
+
+#module load python/2.7.3
+#source /project/projectdirs/dessn/atc/venv/bin/activate.csh
+
+#module load python
 set install_dir="~/.sremote"
 cd $install_dir
+echo "source activate"
 source env/bin/activate.csh
 set python_bin=`which python`
-
+echo "python"
 python remote_server.py "${1}" "${2}"

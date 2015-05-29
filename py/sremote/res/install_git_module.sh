@@ -11,8 +11,14 @@
 # - branch: if not set, the master branch is installed. If set, the selected
 #   one is.
 
-module load python
-module load virtualenv
+setenv PATH /bin:/usr/bin:/sbin:/usr/sbin:$PATH
+if (-f /etc/profile.d/modules.csh) then
+	source /etc/profile.d/modules.csh 
+	module load usg-default-modules
+	module load python
+	module load virtualenv
+endif 
+
 
 set python_bin=`which python`
 set git_bin=`which git`

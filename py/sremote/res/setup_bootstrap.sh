@@ -14,8 +14,15 @@
 
 # Required for Edison, Hopper, and Carver. Will report an error message in other
 # systems.
-module load python
-module load virtualenv
+
+
+setenv PATH /bin:/usr/bin:/sbin:/usr/sbin:$PATH
+if (-f /etc/profile.d/modules.csh) then
+	source /etc/profile.d/modules.csh
+	module load usg-default-modules
+	module load python
+	module load virtualenv
+endif 
 
 # Locates the binaries to be used.
 set python_bin=`which python`
