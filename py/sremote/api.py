@@ -11,6 +11,9 @@ import sremote.tools as remote
 import sys
 import types
 
+class ExceptionRemoteNotSetup(Exception):
+    pass
+
 class RemoteClient(object):
     """Base class for the client side of the remoting functions including:
     - Deployment of the the sremote environment in the remote host.
@@ -63,7 +66,7 @@ class RemoteClient(object):
         if (success):
             return response, std_out
         else:
-            raise Exception(
+            raise ExceptionRemoteNotSetup(
                 "Error executing " +module_name+"."+ method_name + "\n  Output:"
                 +str(std_out))
 
