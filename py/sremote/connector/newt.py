@@ -113,7 +113,7 @@ class ClientNEWTConnector(remote_api.ClientChannel):
             return False
 
         
-    def execute_command(self, command, arg_list=[]):
+    def execute_command(self, command, arg_list=[], keep_env=False):
         cmdurl = "https://newt.nersc.gov/newt/command/" + self._hostname
         qdo_authkey = self._token
 
@@ -121,6 +121,8 @@ class ClientNEWTConnector(remote_api.ClientChannel):
             executable=" ".join([command]+arg_list),
             loginenv='false',
         )
+        if keep_env:
+            data['loginenv'] = 'true'
         print data
         
         results = requests.post(cmdurl, data,

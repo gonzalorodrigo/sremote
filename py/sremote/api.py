@@ -33,7 +33,7 @@ class RemoteClient(object):
         """
         self._comms_client = comms_client
 
-    def do_remote_call(self, module_name, method_name, args=[]):
+    def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
         """Uses _comms_client to send a request to execute
         module_name.method_name(*args) in the remote host. It asumes that
         module_name is installed in the sremote environemnt of the remote 
@@ -60,7 +60,7 @@ class RemoteClient(object):
         # serialized format..
         response_encoded, std_out = self._comms_client.place_and_execute(
             remote.encode_call_request(module_name, method_name,
-                                       args))
+                                       args), keep_env=keep_env)
         
         success, response = remote.decode_call_response(response_encoded)
         if (success):
@@ -180,7 +180,7 @@ class ClientChannel(object):
     """
     
     def execute_request(self, method_request_reference, 
-                        method_response_reference):
+                        method_response_reference, keep_env=False):
         """Invokes the remote interpreter to execute a method request.
         
         Args:
@@ -201,13 +201,13 @@ class ClientChannel(object):
         output= self.execute_command("/bin/csh", 
                                [self.get_dir()+"/"+self._interpreter_route, 
                                method_request_reference, 
-                               method_response_reference])
+                               method_response_reference], keep_env=keep_env)
         
         return output
 
     
     # Implemented methods
-    def place_and_execute(self, serialized_method_call_request):
+    def place_and_execute(self, serialized_method_call_request, keep_env=False):
         """Places method call request in the remote host, executes it, 
         retrives the serialized content of the response.
 
@@ -223,7 +223,8 @@ class ClientChannel(object):
         """
         response_location = self.gen_remote_response_reference()
         location = self.place_call_request(serialized_method_call_request)
-        output = self.execute_request(location, response_location)
+        output = self.execute_request(location, response_location,
+                                      keep_env=keep_env)
         return self.retrieve_call_response(response_location), output
 
     def place_call_request(self, serialized_method_call_request):
@@ -326,7 +327,7 @@ class ClientChannel(object):
         """
         raise Exception("Non implemented")
     
-    def execute_command(self, command, arg_list=[]):
+    def execute_command(self, command, arg_list=[], keep_env=False):
         """Executes a command in the remote host as a user. It is executed
         in the context of the default after login directory of the user.
         
