@@ -293,6 +293,10 @@ class ClientChannel(object):
         return file_name
     
     def gen_random_file_name(self):
+        """returns a true random file name starting with the current time
+        followed by a uuid1:
+        [year]-[month]-[day]_[hour]-[minute]-[second].[us]-[uuid1].dat"""
+        
         random_name = str(datetime.datetime.now())
         random_name = random_name.replace(" ", "_").replace(":","-")
         random_name += "-"+ str(uuid.uuid1())+".dat"
