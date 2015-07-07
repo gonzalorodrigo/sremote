@@ -5,11 +5,13 @@ This code allows to call remote functions of methods that receive and return
 serializable objects. 
 
 """
+import datetime
 import os
 from pkgutil import get_loader
 import sremote.tools as remote
 import sys
 import types
+import uuid
 
 class ExceptionRemoteNotSetup(Exception):
     pass
@@ -275,7 +277,10 @@ class ClientChannel(object):
         Args:
             in_file: if true the file name will be appended .out
         """
-        file_name = self.get_dir()+"/tmp/file_name.dat"
+        random_name = str(datetime.datetime.now())
+        random_name = random_name.replace(" ", "_").replace(":","-")
+        random_name += "-"+ str(uuid.uuid1())
+        file_name = self.get_dir()+"/tmp/"+random_name+".dat"
         if not in_file:
             file_name+=".out"
         return file_name
