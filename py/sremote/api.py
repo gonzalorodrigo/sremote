@@ -277,10 +277,7 @@ class ClientChannel(object):
         Args:
             in_file: if true the file name will be appended .out
         """
-        random_name = str(datetime.datetime.now())
-        random_name = random_name.replace(" ", "_").replace(":","-")
-        random_name += "-"+ str(uuid.uuid1())
-        file_name = self.get_dir()+"/tmp/"+random_name+".dat"
+        file_name = self.get_dir()+"/tmp/"+self.gen_random_file_name()
         if not in_file:
             file_name+=".out"
         return file_name
@@ -290,10 +287,16 @@ class ClientChannel(object):
         
         Args:
             in_file: if true the file name will be appended .out"""
-        file_name = "/tmp/file_name.dat"
+        file_name = "/tmp/"+self.gen_random_file_name()
         if not in_file:
             file_name+=".out"
         return file_name
+    
+    def gen_random_file_name(self):
+        random_name = str(datetime.datetime.now())
+        random_name = random_name.replace(" ", "_").replace(":","-")
+        random_name += "-"+ str(uuid.uuid1())+".dat"
+        return random_name
  
     def get_dir(self):
         """Returns a string with the remote file system location of the sremote
