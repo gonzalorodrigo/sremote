@@ -47,7 +47,7 @@ class ClientSSHConnector(remote_api.ClientChannel):
             print "File retrieve operation error", output, err
         return rc == 0
         
-    def execute_command(self, command, arg_list=[]):
+    def execute_command(self, command, arg_list=[], keep_env=False):
         command_list = ["ssh", self._username+"@"+self._hostname, 
                         command] + arg_list
         p = subprocess.Popen(command_list, stdout=subprocess.PIPE)
