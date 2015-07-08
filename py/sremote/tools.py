@@ -20,6 +20,7 @@ The method response is a dictionary with two times:
  set_serializer
 
 """
+
 import json
 import types
 
@@ -30,6 +31,11 @@ RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
 
 _serializer = json
+
+class ExceptionRemoteExecError(Exception):
+    def get_serialized(self):
+        return dict(sremote_type="ExceptionRemoteExecError",
+                    message = str(self))
 
 def call_method_object_command(call_request):
     """Executes method in obj as instructed  by call_request.
@@ -49,15 +55,34 @@ def call_method_object_command(call_request):
 
 def call_method_object(module_name, method_name, args):
     """Executes obj.method_name(*args) and returns what ever it returns."""
+
+    if not module_exists(module_name):
+        raise ExceptionRemoteExecError("Module "+ module_name +
+                                       " could not be imported")
     obj = __import__(module_name, fromlist=[''])
     print obj
+    if not hasattr(obj, method_name):
+        raise ExceptionRemoteExecError("Method " + method_name +
+                                       " not present in" +
+                                       " module "+module_name)
     method = getattr(obj, method_name)
     if isinstance(args, types.ListType):
-        output = method(*args)
+        try:
+            output = method(*args)
+        except Exception as e:
+            raise ExceptionRemoteExecError("Method " + method_name + " raised "
+                                           "exception. Args(" + str(args) +
+                                           "). Exception: " + str(e))
     elif isinstance(args, types.DictType):
-        output = method(**args)
+        try:
+            output = method(**args)
+        except Exception as e:
+            raise ExceptionRemoteExecError("Method "+method_name+" raised "
+                                           "exception. Args("+str(args) +
+                                           "). Exception: " + str(e))
     else:
-        raise Exception("Wrong arguments type for method: "+str(args))
+        raise ExceptionRemoteExecError("Wrong arguments type for method: " +
+                                       str(args))
     return output
 
 def process_remote_call(request_string):
@@ -118,5 +143,13 @@ def deserialize_obj(command_string):
     """returns object serialized in command_string."""
     return _serializer.loads(command_string)
 
+def module_exists(module_name):
+    """returns True if module can be imported"""
+    try:
+        __import__(module_name)
+    except ImportError:
+        return False
+    else:
+        return True
 
 

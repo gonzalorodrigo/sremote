@@ -8,6 +8,7 @@ python newt.py full_hostname username password
 
 import sremote.api as remote
 import sremote.connector.ssh as ssh
+from sremote.tools import ExceptionRemoteExecError
 import time
 from sys import argv
 
@@ -31,6 +32,30 @@ def valid_queue_name_dict(value):
     print "Total Execution time of call valid_queue_name (s):", run_time
     return return_value
 
+def exception_trigger(value):
+
+    try:
+        return_value, out = client.do_remote_call("random_module",
+                                                  "valid_queue_name", 
+                                                  args={"name":value})
+    except ExceptionRemoteExecError as e:
+        print "Exception to be raised, module does not exist: "+str(e)
+        
+    try:
+        return_value, out = client.do_remote_call("qdo", "random_method", 
+                                              args={"name":value})
+    except ExceptionRemoteExecError as e:
+        print "Exception to be raised, method does not exist: "+str(e)
+       
+    try: 
+        return_value, out = client.do_remote_call("qdo", "connect", 
+                                              args={"queue_name":"random_queue"}
+                                              )
+    except ExceptionRemoteExecError as e:
+        print "Exception to be raised, ValueError: "+str(e)  
+        
+
+
 #
 # client.do_bootstrap_install()
 #
@@ -48,3 +73,5 @@ client = remote.RemoteClient(connector)
 
 print valid_queue_name("juanito")
 print valid_queue_name_dict("juanito!")
+
+exception_trigger("juanito")

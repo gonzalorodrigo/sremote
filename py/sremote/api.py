@@ -16,6 +16,10 @@ import uuid
 class ExceptionRemoteNotSetup(Exception):
     pass
 
+
+
+
+
 class RemoteClient(object):
     """Base class for the client side of the remoting functions including:
     - Deployment of the the sremote environment in the remote host.
@@ -68,6 +72,12 @@ class RemoteClient(object):
         if (success):
             return response, std_out
         else:
+            if response!=None:
+                if (type(response) is dict):
+                    if response.has_key("sremote_type"):
+                        raise remote.ExceptionRemoteExecError(response[
+                                                                "message"])
+            
             raise ExceptionRemoteNotSetup(
                 "Error executing " +module_name+"."+ method_name + "\n  Output:"
                 +str(std_out))
@@ -384,8 +394,13 @@ class ServerChannel(object):
         target_obj_name, command_name, args = remote.decode_call_request(
             call_request_serialized)
         print call_request_serialized, target_obj_name
-        reponse_obj = remote.call_method_object(target_obj_name, command_name, args)
-        content = remote.encode_call_response(reponse_obj, True)
+        success = True
+        try:
+            reponse_obj = remote.call_method_object(target_obj_name, command_name, args)
+        except remote.ExceptionRemoteExecError as e:
+            success = False
+            reponse_obj = e.get_serialized()
+        content = remote.encode_call_response(reponse_obj, success)
         self.store_call_response(method_response_pointer, content)
         return content
         
