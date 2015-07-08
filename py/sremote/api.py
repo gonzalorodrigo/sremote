@@ -17,10 +17,6 @@ from __builtin__ import str
 class ExceptionRemoteNotSetup(Exception):
     pass
 
-
-
-
-
 class RemoteClient(object):
     """Base class for the client side of the remoting functions including:
     - Deployment of the the sremote environment in the remote host.
