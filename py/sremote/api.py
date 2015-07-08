@@ -121,8 +121,7 @@ class RemoteClient(object):
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
                             [install_dir+"/setup_bootstrap.sh"])
         print "Install result:", rc, output, err
-        self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git",
-                                   "integration")
+        self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git")
         return True
     
     def do_install_git_module(self, git_url, branch=None):
