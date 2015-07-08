@@ -271,7 +271,11 @@ class ClientChannel(object):
             string with the content of the remote pointed file.  
         """
         local_route_response = self.get_local_temp_file_route(False)
-        self.retrieve_file(method_responde_reference, local_route_response)
+        if not self.retrieve_file(method_responde_reference,
+                                  local_route_response):
+            raise remote.ExceptionRemoteExecError("retrieve_call_response:"+
+                                                  " Result of method could not"+
+                                                  " be retrieved.")
         text_file = open(local_route_response, "r")
         content = "\n".join(text_file.readlines())
         text_file.close()
