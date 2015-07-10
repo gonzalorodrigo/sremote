@@ -112,8 +112,6 @@ def encode_call_request(module_name, command_name, args = [],
                         required_extra_modules = []):
     """Creates a call_request_object and serializes it."""
     all_modules = required_extra_modules
-    if not module_name in all_modules:
-        all_modules=required_extra_modules + [module_name]
     command_obj = {COMMAND_TYPE: command_name}
     command_obj[COMMAND_ARGS] = args
     command_obj[COMMAND_MODULE] = module_name
