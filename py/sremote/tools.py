@@ -29,6 +29,7 @@ COMMAND_TYPE = "command"
 COMMAND_ARGS = "args"
 RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
+RESPONSE_VERSION = "srmote_version"
 
 _serializer = json
 
@@ -36,6 +37,9 @@ class ExceptionRemoteExecError(Exception):
     def get_serialized(self):
         return dict(sremote_type="ExceptionRemoteExecError",
                     message = str(self))
+
+class ExceptionRemoteNotSetup(Exception):
+    pass
 
 def call_method_object_command(call_request):
     """Executes method in obj as instructed  by call_request.
@@ -114,15 +118,26 @@ def encode_call_response(return_value, success=True):
     """Encodes and serializes a method response."""
     response = {RESPONSE_STATUS:success}
     response[RESPONSE_CONTENT] = return_value
+    response[RESPONSE_VERSION] = get_sremote_version()
     return serialize_obj(response)
 
 def decode_call_response(call_response_serialized):
     """Deserializes and decodes a method response."""
     try:
         response_obj = deserialize_obj(call_response_serialized)
-        return response_obj[RESPONSE_STATUS], response_obj[RESPONSE_CONTENT]
     except:
         return False, "Bad response: "+str(call_response_serialized)
+    version = get_sremote_version()
+    if not RESPONSE_VERSION in response_obj.keys():
+        raise ExceptionRemoteNotSetup("SREMOTE Version info not present in"+
+                                      " response")
+    if response_obj[RESPONSE_VERSION] != version:
+        raise ExceptionRemoteNotSetup("SERMOTE version miss-match: local("
+                                      + str(response_obj[RESPONSE_VERSION])
+                                      +") != remote("+version
+                                      +")")
+    return response_obj[RESPONSE_STATUS], response_obj[RESPONSE_CONTENT]
+   
  
 def set_serializer(serializer):
     """Sets the serializer of the library.
@@ -151,5 +166,10 @@ def module_exists(module_name):
         return False
     else:
         return True
+import pkg_resources
+
+def get_sremote_version():
+    """returns the version stated in the setup.py of sremote package"""
+    return pkg_resources.get_distribution("sremote").version
 
 

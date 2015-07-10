@@ -14,13 +14,6 @@ import types
 import uuid
 from __builtin__ import str
 
-class ExceptionRemoteNotSetup(Exception):
-    pass
-
-
-
-
-
 class RemoteClient(object):
     """Base class for the client side of the remoting functions including:
     - Deployment of the the sremote environment in the remote host.
@@ -80,7 +73,7 @@ class RemoteClient(object):
                         raise remote.ExceptionRemoteExecError(response[
                                                                 "message"])
             
-            raise ExceptionRemoteNotSetup(
+            raise remote.ExceptionRemoteNotSetup(
                 "Error executing " +module_name+"."+ method_name + "\n  Output:"
                 +str(std_out))
 
@@ -276,7 +269,7 @@ class ClientChannel(object):
         local_route_response = self.get_local_temp_file_route(False)
         if not self.retrieve_file(method_responde_reference,
                                   local_route_response):
-            raise ExceptionRemoteNotSetup("retrieve_call_response: " +
+            raise remote.ExceptionRemoteNotSetup("retrieve_call_response: " +
                                                   "Result of method could not" +
                                                   " be retrieved. Pointer: " +
                                                   str(method_responde_reference)
