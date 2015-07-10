@@ -121,7 +121,8 @@ class RemoteClient(object):
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
                             [install_dir+"/setup_bootstrap.sh"])
         print "Install result:", rc, output, err
-        self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git")
+        self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git",
+                                   "remote")
         return True
     
     def do_install_git_module(self, git_url, branch=None):
@@ -275,7 +276,7 @@ class ClientChannel(object):
         local_route_response = self.get_local_temp_file_route(False)
         if not self.retrieve_file(method_responde_reference,
                                   local_route_response):
-            raise remote.ExceptionRemoteExecError("retrieve_call_response: " +
+            raise ExceptionRemoteNotSetup("retrieve_call_response: " +
                                                   "Result of method could not" +
                                                   " be retrieved. Pointer: " +
                                                   str(method_responde_reference)
