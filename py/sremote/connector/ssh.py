@@ -12,7 +12,7 @@ class ClientSSHConnector(remote_api.ClientChannel):
         self._interpreter_route = interpreter_route
         self._hostname = hostname;
 
-    def auth(self, username, password=None, token=None):
+    def auth(self, username, password=None, token=None, home_dir=None):
         """Auth method. It stores the username. Authenticaion does not
         occur until an actual operation is executed. It no ssh key is
         configured in the client, future operations will ask for password."""

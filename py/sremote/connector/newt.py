@@ -87,7 +87,7 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         cmdurl = ("https://newt.nersc.gov/newt/file/" + self._hostname
                   + dest_route)
 
-        qdo_getkey = self._token
+        qdo_authkey = self._token
         text_file = open(origin_route, "r")
         results = requests.put(cmdurl, text_file,
                                cookies={'newt_sessionid': qdo_authkey})
