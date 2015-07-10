@@ -14,7 +14,7 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         self._token = None
     
     
-    def auth(self, username, password=None, token=None):
+    def auth(self, username, password=None, token=None, home_dir=None):
         """Auth method. It performs auth operation against the newt server and
         stores the token for futher use. It also detects the users login dir
         and stores it.
@@ -46,7 +46,10 @@ class ClientNEWTConnector(remote_api.ClientChannel):
                     self._token = newt_sessionid
                     del res_obj
                     del results
-                    self._home_dir = self.get_pwd()
+                    if home_dir:
+                        self._home_dir = home_dir 
+                    else:
+                        self._home_dir = self.get_pwd()
                     return True
                 del res_obj
                 del results
@@ -57,7 +60,10 @@ class ClientNEWTConnector(remote_api.ClientChannel):
                 return False
         else:
             self._token = token
-            self._home_dir = self.get_pwd()
+            if home_dir:
+                self._home_dir = home_dir 
+            else:
+                self._home_dir = self.get_pwd()
             print self._home_dir
             if self._home_dir!=None:
                 return True
@@ -81,7 +87,7 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         cmdurl = ("https://newt.nersc.gov/newt/file/" + self._hostname
                   + dest_route)
 
-        qdo_authkey = self._token
+        qdo_getkey = self._token
         text_file = open(origin_route, "r")
         results = requests.put(cmdurl, text_file,
                                cookies={'newt_sessionid': qdo_authkey})
