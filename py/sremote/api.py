@@ -32,6 +32,7 @@ class RemoteClient(object):
             comms_client: an object that is super class of RemoteComms class.
         """
         self._comms_client = comms_client
+        self._registered_remote_modules = []
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
         """Uses _comms_client to send a request to execute
@@ -50,6 +51,13 @@ class RemoteClient(object):
         Returns:
             If successes: response object and a string with the  std_out of
             the execution. Raises an exception otherwise.
+        
+        Rises Exceptions:
+            ExceptionRemoteNotSetup: Remote end point does not have sremote or
+                the version of remote-local sites don't match.
+            ExceptionRemoteModulesError: Remote end-point does not have
+                module_name or required_registered_modules or versions don't
+                match.
             
         """
         if (not isinstance(args, types.ListType) and 
@@ -61,7 +69,9 @@ class RemoteClient(object):
         # serialized format..
         response_encoded, std_out = self._comms_client.place_and_execute(
             remote.encode_call_request(module_name, method_name,
-                                       args), keep_env=keep_env)
+                                       args, required_extra_modules =
+                                          self._registered_remote_modules),
+                                       keep_env=keep_env)
         
         success, response = remote.decode_call_response(response_encoded)
         if (success):
@@ -168,6 +178,10 @@ class RemoteClient(object):
         parts.insert(0, os.path.dirname(mod.__file__))
         resource_name = os.path.join(*parts)
         return resource_name
+    
+    def register_remote_module(self, module_name):
+        if not module_name in  self._registered_remote_modules:
+            self._registered_remote_modules.append(module_name)
 
 
 class ClientChannel(object):
@@ -394,16 +408,19 @@ class ServerChannel(object):
         """
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
-        target_obj_name, command_name, args = remote.decode_call_request(
-            call_request_serialized)
+        target_obj_name, command_name, args, extra_modules = \
+                remote.decode_call_request(call_request_serialized)
         print call_request_serialized, target_obj_name
         success = True
         try:
-            reponse_obj = remote.call_method_object(target_obj_name, command_name, args)
+            reponse_obj = remote.call_method_object(target_obj_name,
+                                                    command_name, args)
         except remote.ExceptionRemoteExecError as e:
             success = False
             reponse_obj = e.get_serialized()
-        content = remote.encode_call_response(reponse_obj, success)
+        content = remote.encode_call_response(reponse_obj, success,
+                                              required_extra_modules=
+                                               extra_modules)
         self.store_call_response(method_response_pointer, content)
         return content
         

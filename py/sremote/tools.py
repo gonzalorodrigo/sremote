@@ -27,9 +27,12 @@ import types
 COMMAND_MODULE = "module"
 COMMAND_TYPE = "command"
 COMMAND_ARGS = "args"
+COMMAND_MODULES_CHECK = "modules_check"
+
 RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
 RESPONSE_VERSION = "srmote_version"
+RESPONSE_MODULES_CHECK = "modules_check"
 
 _serializer = json
 
@@ -39,6 +42,9 @@ class ExceptionRemoteExecError(Exception):
                     message = str(self))
 
 class ExceptionRemoteNotSetup(Exception):
+    pass
+
+class ExceptionRemoteModulesError(Exception):
     pass
 
 def call_method_object_command(call_request):
@@ -102,29 +108,40 @@ def process_remote_call(request_string):
     module_name, method_name, args = decode_call_request(request_string)
     return call_method_object(module_name, method_name, args)
 
-def encode_call_request(module_name, command_name, args = []):
+def encode_call_request(module_name, command_name, args = [], 
+                        required_extra_modules = []):
     """Creates a call_request_object and serializes it."""
+    all_modules = required_extra_modules
+    if not module_name in all_modules:
+        all_modules=required_extra_modules + [module_name]
     command_obj = {COMMAND_TYPE: command_name}
     command_obj[COMMAND_ARGS] = args
     command_obj[COMMAND_MODULE] = module_name
+    command_obj[COMMAND_MODULES_CHECK] = all_modules
     return serialize_obj(command_obj)
     
 def decode_call_request(call_request_serialized):
     """Deserializes and decodes a call_request_object."""
     obj = deserialize_obj(call_request_serialized)
-    return obj[COMMAND_MODULE], obj[COMMAND_TYPE], obj[COMMAND_ARGS]
+    return obj[COMMAND_MODULE], obj[COMMAND_TYPE], obj[COMMAND_ARGS], \
+        obj[COMMAND_MODULES_CHECK]
     
-def encode_call_response(return_value, success=True):
+def encode_call_response(return_value, success=True,
+                         required_extra_modules=[]):
     """Encodes and serializes a method response."""
     response = {RESPONSE_STATUS:success}
     response[RESPONSE_CONTENT] = return_value
     response[RESPONSE_VERSION] = get_sremote_version()
+    response[RESPONSE_MODULES_CHECK] = \
+            get_modules_versions(required_extra_modules)
+    
     return serialize_obj(response)
 
 def decode_call_response(call_response_serialized):
     """Deserializes and decodes a method response."""
     try:
         response_obj = deserialize_obj(call_response_serialized)
+        print response_obj
     except:
         return False, "Bad response: "+str(call_response_serialized)
     version = get_sremote_version()
@@ -134,8 +151,13 @@ def decode_call_response(call_response_serialized):
     if response_obj[RESPONSE_VERSION] != version:
         raise ExceptionRemoteNotSetup("SERMOTE version miss-match: remote("
                                       + str(response_obj[RESPONSE_VERSION])
-                                      +") != local("+version
+                                      +") != local("+str(version)
                                       +")")
+        
+    if not RESPONSE_MODULES_CHECK in response_obj.keys():
+        raise ExceptionRemoteNotSetup("Modules check version info not present in"+
+                                      " response")
+    check_modules_versions(response_obj[RESPONSE_MODULES_CHECK])
     return response_obj[RESPONSE_STATUS], response_obj[RESPONSE_CONTENT]
    
  
@@ -144,7 +166,7 @@ def set_serializer(serializer):
     
     Args:
         serializer: an object that implements the methods:
-            - dumps(obj): returns the serialized vesio of obj
+            - dumps(obj): returns the serialized obj
             - loads(serialized_obj): returns the object serialized in
               seriazlied_obj. 
     """
@@ -170,6 +192,43 @@ import pkg_resources
 
 def get_sremote_version():
     """returns the version stated in the setup.py of sremote package"""
-    return pkg_resources.get_distribution("sremote").version
+    return get_module_version("sremote")
+
+def get_modules_versions(modules_name_list):
+    module_versions = {}
+    for module_name in modules_name_list:
+        version = None
+        if module_exists(module_name):
+            version = get_module_version(module_name)
+        module_versions[module_name] = version
+    return module_versions
+    
+def get_module_version(module_name):
+    return pkg_resources.get_distribution(module_name).version
+
+def check_modules_versions(module_dic):
+    """Checks a dictionary of module_name:version against the ones installed
+    in the execution environment. It checks all the modules and raises an
+    execption at the end. Conditions for exception for each module:
+    - Module not present in execution environment.
+    - Module version is none (note present in remote environment.
+    - Module versions miss-match.
+    """ 
+    msj = ""
+    all_modules_ok=True
+    for (name, version) in module_dic.iteritems():
+        if not module_exists(name):
+            all_modules_ok=False
+            msj+="Module "+name+" not present in local machine.\n"
+        elif version == None:
+            all_modules_ok = False
+            msj+="Module "+name+" nor present in remote machine.\n"
+        elif version!=get_module_version(name):
+            all_modules_ok=False
+            msj+=("Module "+name+" version miss-match: local(" + 
+                str(get_module_version(name)) + ")-remote("+
+                str(version))+")"
+    if not all_modules_ok:
+        raise(ExceptionRemoteModulesError(msj))
 
 

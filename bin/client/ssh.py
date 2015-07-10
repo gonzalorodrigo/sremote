@@ -8,7 +8,7 @@ python newt.py full_hostname username password
 
 import sremote.api as remote
 import sremote.connector.ssh as ssh
-from sremote.tools import ExceptionRemoteExecError
+from sremote.tools import ExceptionRemoteExecError, ExceptionRemoteModulesError
 import time
 from sys import argv
 
@@ -38,7 +38,7 @@ def exception_trigger(value):
         return_value, out = client.do_remote_call("random_module",
                                                   "valid_queue_name", 
                                                   args={"name":value})
-    except ExceptionRemoteExecError as e:
+    except ExceptionRemoteModulesError as e:
         print "Exception to be raised, module does not exist: "+str(e)
         
     try:
