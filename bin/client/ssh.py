@@ -8,7 +8,7 @@ python newt.py full_hostname username password
 
 import sremote.api as remote
 import sremote.connector.ssh as ssh
-from sremote.tools import ExceptionRemoteExecError
+from sremote.tools import ExceptionRemoteExecError, ExceptionRemoteModulesError
 import time
 from sys import argv
 
@@ -38,7 +38,7 @@ def exception_trigger(value):
         return_value, out = client.do_remote_call("random_module",
                                                   "valid_queue_name", 
                                                   args={"name":value})
-    except ExceptionRemoteExecError as e:
+    except ExceptionRemoteModulesError as e:
         print "Exception to be raised, module does not exist: "+str(e)
         
     try:
@@ -55,6 +55,22 @@ def exception_trigger(value):
         print "Exception to be raised, ValueError: "+str(e)  
         
 
+def setting_remote_var():
+    client.register_remote_env_variable("myVar", "myValue")
+    
+    return_value, out = client.do_remote_call("os", "getenv", 
+                                              args=["HOME"]
+                                              )
+    
+    print "HOME", return_value
+    return_value, out = client.do_remote_call("os", "getenv", 
+                                              args=["myVar"]
+                                              )
+    print out
+    print "They should be the same value",  return_value, "myValue"
+    
+        
+
 
 #
 # client.do_bootstrap_install()
@@ -69,7 +85,9 @@ connector.auth(argv[2])
 client = remote.RemoteClient(connector)
 
 
+setting_remote_var()
 
+exit()
 
 print valid_queue_name("juanito")
 print valid_queue_name_dict("juanito!")

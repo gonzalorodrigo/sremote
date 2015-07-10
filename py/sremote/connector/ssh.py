@@ -12,7 +12,7 @@ class ClientSSHConnector(remote_api.ClientChannel):
         self._interpreter_route = interpreter_route
         self._hostname = hostname;
 
-    def auth(self, username, password=None, token=None):
+    def auth(self, username, password=None, token=None, home_dir=None):
         """Auth method. It stores the username. Authenticaion does not
         occur until an actual operation is executed. It no ssh key is
         configured in the client, future operations will ask for password."""
@@ -28,7 +28,7 @@ class ClientSSHConnector(remote_api.ClientChannel):
     def push_file(self, origin_route, dest_route):
         command_list =  ["scp", origin_route, self._username + "@" +
                          self._hostname + ":" + dest_route]
-        print command_list
+        #print command_list
         p = subprocess.Popen(command_list, stdout=subprocess.PIPE)
         output, err = p.communicate()
         rc = p.returncode
@@ -39,7 +39,7 @@ class ClientSSHConnector(remote_api.ClientChannel):
     def retrieve_file(self, origin_route, dest_route):
         command_list =  ["scp", self._username + "@" +
                  self._hostname + ":" + origin_route,  dest_route]
-        print command_list
+        #print command_list
         p = subprocess.Popen(command_list, stdout=subprocess.PIPE)
         output, err = p.communicate()
         rc = p.returncode

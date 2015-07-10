@@ -14,9 +14,6 @@ import types
 import uuid
 from __builtin__ import str
 
-class ExceptionRemoteNotSetup(Exception):
-    pass
-
 class RemoteClient(object):
     """Base class for the client side of the remoting functions including:
     - Deployment of the the sremote environment in the remote host.
@@ -35,6 +32,8 @@ class RemoteClient(object):
             comms_client: an object that is super class of RemoteComms class.
         """
         self._comms_client = comms_client
+        self._registered_remote_modules = []
+        self._remote_env_variables = {}
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
         """Uses _comms_client to send a request to execute
@@ -53,6 +52,13 @@ class RemoteClient(object):
         Returns:
             If successes: response object and a string with the  std_out of
             the execution. Raises an exception otherwise.
+        
+        Rises Exceptions:
+            ExceptionRemoteNotSetup: Remote end point does not have sremote or
+                the version of remote-local sites don't match.
+            ExceptionRemoteModulesError: Remote end-point does not have
+                module_name or required_registered_modules or versions don't
+                match.
             
         """
         if (not isinstance(args, types.ListType) and 
@@ -64,7 +70,11 @@ class RemoteClient(object):
         # serialized format..
         response_encoded, std_out = self._comms_client.place_and_execute(
             remote.encode_call_request(module_name, method_name,
-                                       args), keep_env=keep_env)
+                                       args, required_extra_modules =
+                                          self._registered_remote_modules,
+                                       remote_env_variables=
+                                            self._remote_env_variables),
+                                       keep_env=keep_env)
         
         success, response = remote.decode_call_response(response_encoded)
         if (success):
@@ -76,7 +86,7 @@ class RemoteClient(object):
                         raise remote.ExceptionRemoteExecError(response[
                                                                 "message"])
             
-            raise ExceptionRemoteNotSetup(
+            raise remote.ExceptionRemoteNotSetup(
                 "Error executing " +module_name+"."+ method_name + "\n  Output:"
                 +str(std_out))
 
@@ -117,7 +127,8 @@ class RemoteClient(object):
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
                             [install_dir+"/setup_bootstrap.sh"])
         print "Install result:", rc, output, err
-        self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git")
+        self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git",
+                                   "integration")
         return True
     
     def do_install_git_module(self, git_url, branch=None):
@@ -170,6 +181,19 @@ class RemoteClient(object):
         parts.insert(0, os.path.dirname(mod.__file__))
         resource_name = os.path.join(*parts)
         return resource_name
+    
+    def register_remote_module(self, module_name):
+        """When a remote call is performed, Module module_name version 
+        will be compared between local and remote. If not present in remote or
+        version miss-match then ExceptionRemoteModulesError
+        will be raised."""
+        if not module_name in  self._registered_remote_modules:
+            self._registered_remote_modules.append(module_name)
+    
+    def register_remote_env_variable(self, name, value):
+        """When a remote call is perfomed, environment variable *name*
+        will be set in the remote environment with value *value*."""
+        self._remote_env_variables[name]=value
 
 
 class ClientChannel(object):
@@ -271,7 +295,7 @@ class ClientChannel(object):
         local_route_response = self.get_local_temp_file_route(False)
         if not self.retrieve_file(method_responde_reference,
                                   local_route_response):
-            raise remote.ExceptionRemoteExecError("retrieve_call_response: " +
+            raise remote.ExceptionRemoteNotSetup("retrieve_call_response: " +
                                                   "Result of method could not" +
                                                   " be retrieved. Pointer: " +
                                                   str(method_responde_reference)
@@ -396,16 +420,20 @@ class ServerChannel(object):
         """
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
-        target_obj_name, command_name, args = remote.decode_call_request(
-            call_request_serialized)
-        print call_request_serialized, target_obj_name
+        target_obj_name, command_name, args, extra_modules, env_variables  = \
+                remote.decode_call_request(call_request_serialized)
+        remote.set_environ_variables(env_variables)
+        #print call_request_serialized, target_obj_name
         success = True
         try:
-            reponse_obj = remote.call_method_object(target_obj_name, command_name, args)
+            reponse_obj = remote.call_method_object(target_obj_name,
+                                                    command_name, args)
         except remote.ExceptionRemoteExecError as e:
             success = False
             reponse_obj = e.get_serialized()
-        content = remote.encode_call_response(reponse_obj, success)
+        content = remote.encode_call_response(reponse_obj, success,
+                                              required_extra_modules=
+                                               extra_modules)
         self.store_call_response(method_response_pointer, content)
         return content
         
