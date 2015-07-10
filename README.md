@@ -60,6 +60,14 @@ a function of a Python module hosted in a remote host.
 - Once the interpreter has finished, the connector is used to retrieve
   the method response file from the remote host.
 - The content is read, deserialized and the return value returned.
+- A remote call may fail, to tackle the failure is propagated to the client
+  whose raises an exception. Exceptions raised by
+  RemoteClient.do_remote_call:
+  - ExceptionRemoteExecError: Execution failed remotely. Message indicates
+    what. Types of controlled failed: remote module not found, remote method
+    not found, method raised exception while executing.
+  - ExceptionRemoteNotSetup: Remote srmote library not present or broken.
+    
 
 Authors
 =======
