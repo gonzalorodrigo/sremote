@@ -55,6 +55,22 @@ def exception_trigger(value):
         print "Exception to be raised, ValueError: "+str(e)  
         
 
+def setting_remote_var():
+    client.register_remote_env_variable("myVar", "myValue")
+    
+    return_value, out = client.do_remote_call("os", "getenv", 
+                                              args=["HOME"]
+                                              )
+    
+    print "HOME", return_value
+    return_value, out = client.do_remote_call("os", "getenv", 
+                                              args=["myVar"]
+                                              )
+    print out
+    print "They should be the same value",  return_value, "myValue"
+    
+        
+
 
 #
 # client.do_bootstrap_install()
@@ -69,7 +85,9 @@ connector.auth(argv[2])
 client = remote.RemoteClient(connector)
 
 
+setting_remote_var()
 
+exit()
 
 print valid_queue_name("juanito")
 print valid_queue_name_dict("juanito!")

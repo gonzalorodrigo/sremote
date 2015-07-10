@@ -123,11 +123,11 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         )
         if keep_env:
             data['loginenv'] = 'true'
-        print data
+        #print data
         
         results = requests.post(cmdurl, data,
                                 cookies={'newt_sessionid': qdo_authkey})
-        print results
+        #print results
         output = results.json()["output"]
         error = results.json()["error"]
         del results

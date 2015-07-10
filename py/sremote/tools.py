@@ -22,12 +22,14 @@ The method response is a dictionary with two times:
 """
 
 import json
+import os
 import types
 
 COMMAND_MODULE = "module"
 COMMAND_TYPE = "command"
 COMMAND_ARGS = "args"
 COMMAND_MODULES_CHECK = "modules_check"
+COMMAND_ENV_VARIABLES = "enviroment_variables"
 
 RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
@@ -70,7 +72,7 @@ def call_method_object(module_name, method_name, args):
         raise ExceptionRemoteExecError("Module "+ module_name +
                                        " could not be imported")
     obj = __import__(module_name, fromlist=[''])
-    print obj
+    #print obj
     if not hasattr(obj, method_name):
         raise ExceptionRemoteExecError("Method " + method_name +
                                        " not present in" +
@@ -95,6 +97,10 @@ def call_method_object(module_name, method_name, args):
                                        str(args))
     return output
 
+def set_environ_variables(dic_variables):
+    for (name, value) in dic_variables.iteritems():
+        os.environ[name]=value
+
 def process_remote_call(request_string):
     """Deserializes a call_request and executes it in invoked_object.
     
@@ -105,24 +111,28 @@ def process_remote_call(request_string):
         result of executing whatever is specified in request_sting in
         invoked_object.
     """ 
-    module_name, method_name, args = decode_call_request(request_string)
+    module_name, method_name, args, env_variables = \
+                 decode_call_request(request_string)
+    set_environ_variables(env_variables)
     return call_method_object(module_name, method_name, args)
 
 def encode_call_request(module_name, command_name, args = [], 
-                        required_extra_modules = []):
+                        required_extra_modules = [],
+                        remote_env_variables = {}):
     """Creates a call_request_object and serializes it."""
     all_modules = required_extra_modules
     command_obj = {COMMAND_TYPE: command_name}
     command_obj[COMMAND_ARGS] = args
     command_obj[COMMAND_MODULE] = module_name
     command_obj[COMMAND_MODULES_CHECK] = all_modules
+    command_obj[COMMAND_ENV_VARIABLES] = remote_env_variables
     return serialize_obj(command_obj)
     
 def decode_call_request(call_request_serialized):
     """Deserializes and decodes a call_request_object."""
     obj = deserialize_obj(call_request_serialized)
     return obj[COMMAND_MODULE], obj[COMMAND_TYPE], obj[COMMAND_ARGS], \
-        obj[COMMAND_MODULES_CHECK]
+        obj[COMMAND_MODULES_CHECK], obj[COMMAND_ENV_VARIABLES]
     
 def encode_call_response(return_value, success=True,
                          required_extra_modules=[]):
@@ -139,7 +149,7 @@ def decode_call_response(call_response_serialized):
     """Deserializes and decodes a method response."""
     try:
         response_obj = deserialize_obj(call_response_serialized)
-        print response_obj
+        #print response_obj
     except:
         return False, "Bad response: "+str(call_response_serialized)
     version = get_sremote_version()

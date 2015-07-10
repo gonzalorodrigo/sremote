@@ -33,6 +33,7 @@ class RemoteClient(object):
         """
         self._comms_client = comms_client
         self._registered_remote_modules = []
+        self._remote_env_variables = {}
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
         """Uses _comms_client to send a request to execute
@@ -70,7 +71,9 @@ class RemoteClient(object):
         response_encoded, std_out = self._comms_client.place_and_execute(
             remote.encode_call_request(module_name, method_name,
                                        args, required_extra_modules =
-                                          self._registered_remote_modules),
+                                          self._registered_remote_modules,
+                                       remote_env_variables=
+                                            self._remote_env_variables),
                                        keep_env=keep_env)
         
         success, response = remote.decode_call_response(response_encoded)
@@ -180,8 +183,17 @@ class RemoteClient(object):
         return resource_name
     
     def register_remote_module(self, module_name):
+        """When a remote call is performed, Module module_name version 
+        will be compared between local and remote. If not present in remote or
+        version miss-match then ExceptionRemoteModulesError
+        will be raised."""
         if not module_name in  self._registered_remote_modules:
             self._registered_remote_modules.append(module_name)
+    
+    def register_remote_env_variable(self, name, value):
+        """When a remote call is perfomed, environment variable *name*
+        will be set in the remote environment with value *value*."""
+        self._remote_env_variables[name]=value
 
 
 class ClientChannel(object):
@@ -408,9 +420,10 @@ class ServerChannel(object):
         """
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
-        target_obj_name, command_name, args, extra_modules = \
+        target_obj_name, command_name, args, extra_modules, env_variables  = \
                 remote.decode_call_request(call_request_serialized)
-        print call_request_serialized, target_obj_name
+        remote.set_environ_variables(env_variables)
+        #print call_request_serialized, target_obj_name
         success = True
         try:
             reponse_obj = remote.call_method_object(target_obj_name,
