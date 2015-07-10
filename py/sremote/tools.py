@@ -132,9 +132,9 @@ def decode_call_response(call_response_serialized):
         raise ExceptionRemoteNotSetup("SREMOTE Version info not present in"+
                                       " response")
     if response_obj[RESPONSE_VERSION] != version:
-        raise ExceptionRemoteNotSetup("SERMOTE version miss-match: local("
+        raise ExceptionRemoteNotSetup("SERMOTE version miss-match: remote("
                                       + str(response_obj[RESPONSE_VERSION])
-                                      +") != remote("+version
+                                      +") != local("+version
                                       +")")
     return response_obj[RESPONSE_STATUS], response_obj[RESPONSE_CONTENT]
    
