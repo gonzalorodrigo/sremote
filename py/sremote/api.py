@@ -34,6 +34,7 @@ class RemoteClient(object):
         self._comms_client = comms_client
         self._registered_remote_modules = []
         self._remote_env_variables = {}
+        self._conditional_remote_env_variables = {}
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
         """Uses _comms_client to send a request to execute
@@ -65,16 +66,18 @@ class RemoteClient(object):
             not isinstance(args, types.DictType)):
             raise Exception("Wrong type for args, expected list or dict, found "
                             + str(type(args)))
-        # Encondes and sends the call request to the remote host and calls the
+        # Encodes and sends the call request to the remote host and calls the
         # interpreter to execute. Then the response is retrieved in a 
         # serialized format..
         response_encoded, std_out = self._comms_client.place_and_execute(
             remote.encode_call_request(module_name, method_name,
-                                       args, required_extra_modules =
-                                          self._registered_remote_modules,
-                                       remote_env_variables=
-                                            self._remote_env_variables),
-                                       keep_env=keep_env)
+                                    args, required_extra_modules =
+                                        self._registered_remote_modules,
+                                    remote_env_variables=
+                                        self._remote_env_variables,
+                                    conditional_remote_env_variables=
+                                        self._conditional_remote_env_variables),
+                                    keep_env=keep_env)
         
         success, response = remote.decode_call_response(response_encoded)
         if (success):
@@ -195,10 +198,14 @@ class RemoteClient(object):
         if not module_name in  self._registered_remote_modules:
             self._registered_remote_modules.append(module_name)
     
-    def register_remote_env_variable(self, name, value):
+    def register_remote_env_variable(self, name, value, only_if_no_set=False):
         """When a remote call is perfomed, environment variable *name*
-        will be set in the remote environment with value *value*."""
-        self._remote_env_variables[name]=value
+        will be set in the remote environment with value *value*. If conditional
+        is True, this variable will be set ONLY if it is not set already."""
+        if only_if_no_set:
+            self._conditional_remote_env_variables[name] = value
+        else:
+            self._remote_env_variables[name]=value
 
 
 class ClientChannel(object):
