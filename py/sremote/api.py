@@ -432,9 +432,11 @@ class ServerChannel(object):
         """
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
-        target_obj_name, command_name, args, extra_modules, env_variables  = \
+        target_obj_name, command_name, args, extra_modules, env_variables, \
+            conditional_env_variables  = \
                 remote.decode_call_request(call_request_serialized)
         remote.set_environ_variables(env_variables)
+        remote.set_environ_variables(conditional_env_variables, True)
         #print call_request_serialized, target_obj_name
         success = True
         try:
