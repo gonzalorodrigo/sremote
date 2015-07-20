@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 setup(
     name="sremote",
     packages=find_packages(),
-    version="0.13",
+    version="0.14",
     # install_requires=[s.strip() for s in open("requirements.txt")],
     extras_require={},
     package_data={"sremote": ["res/*.*"]},
