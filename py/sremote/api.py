@@ -131,7 +131,7 @@ class RemoteClient(object):
                                    "integration")
         return True
     
-    def do_install_git_module(self, git_url, branch=None):
+    def do_install_git_module(self, git_url, branch=None, keep_after=None):
         """
         Installs a Python library in the remote host's sremote environment. The
         source of this library is a git repository. It takes two steps:
@@ -145,6 +145,9 @@ class RemoteClient(object):
                 setup.py script.
             branch: a string with the name of the branch to install. If not set,
                 master branch is installed.
+            keep_after: if set with a string test, the git module code will be
+                installed in ~/.sremote/tmp/[keep_after] and not deleted at 
+                after installation clean up.
         
         Returns:
             true if installation successes. 
@@ -158,6 +161,8 @@ class RemoteClient(object):
         branch_arg = []
         if branch:
             branch_arg.append(branch)
+        if keep_after:
+            branch_arg.append(keep_after)
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
                         [install_dir + "/install_git_module.sh", git_url] +
                         branch_arg)

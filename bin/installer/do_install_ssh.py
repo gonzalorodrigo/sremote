@@ -25,4 +25,5 @@ client.do_bootstrap_install()
  
 client.do_install_git_module(
              "https://gonzalorodrigo@bitbucket.org/berkeleylab/qdo.git", 
-             "master")
+             "master",
+             "qdo")

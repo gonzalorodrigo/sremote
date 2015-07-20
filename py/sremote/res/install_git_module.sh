@@ -27,21 +27,34 @@ set install_dir="~/.sremote"
 cd $install_dir
 source env/bin/activate.csh
 
+set module_dir='module_source'
+
 #TODO(gonzalorodrigo): More robust argument parsing.
+
+set do_clean='true'
+if ($#argv == 3) then
+	set do_clean='false'
+	set module_dir=$3
+endif
 
 mkdir tmp
 cd tmp
-$git_bin clone $1 module_source
+rm -rf $module_dir
+$git_bin clone $1 $module_dir
 
-cd module_source
-if ($#argv == 2) then
+cd $module_dir
+if ($#argv >= 2) then
 	$git_bin checkout $2 
 endif
+
+
+
+
 cd py
 python setup.py install
 cd ../..
 
-if (-d module_source ) then
+if ($do_clean == 'true' && -d $module_dir) then
 	echo "Cleaning up"
-    rm -rf module_source
+    rm -rf $module_dir
 endif
