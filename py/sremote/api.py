@@ -110,7 +110,7 @@ class RemoteClient(object):
         Returns:
             True if success.
         """
-        install_dir = self._comms_client.get_dir()
+        install_dir = self._comms_client.get_dir_sremote()
         self._comms_client.execute_command("/bin/mkdir", ["-p", install_dir])
         if not self._comms_client.push_file(
                                 self.get_resource_route("setup_bootstrap.sh"), 
@@ -155,7 +155,7 @@ class RemoteClient(object):
         Returns:
             true if installation successes. 
         """
-        install_dir = self._comms_client.get_dir()
+        install_dir = self._comms_client.get_dir_sremote()
         if not self._comms_client.push_file(
                             self.get_resource_route("install_git_module.sh"), 
                             install_dir+"/install_git_module.sh"):
@@ -245,9 +245,11 @@ class ClientChannel(object):
         """
         
         output= self.execute_command("/bin/csh", 
-                               [self.get_dir()+"/"+self._interpreter_route, 
+                               [self.get_dir_sremote()+"/"+self._interpreter_route, 
                                method_request_reference, 
-                               method_response_reference], keep_env=keep_env)
+                               method_response_reference,
+                               self.get_dir_sremote(),
+                               self.get_dir_tmp()], keep_env=keep_env)
         
         return output
 
@@ -290,7 +292,9 @@ class ClientChannel(object):
         text_file.write(serialized_method_call_request)
         text_file.close()
         remote_file_route = self.gen_remote_temp_file_route()
-        self.push_file(reference_route, remote_file_route)
+        if (not self.push_file(reference_route, remote_file_route)):
+            self.create_remote_tmp_dir()
+            self.push_file(reference_route, remote_file_route)
         return remote_file_route
     
     def retrieve_call_response(self, method_responde_reference):
@@ -327,7 +331,7 @@ class ClientChannel(object):
         Args:
             in_file: if true the file name will be appended .out
         """
-        file_name = self.get_dir()+"/tmp/"+self.gen_random_file_name()
+        file_name = self.get_dir_tmp()+"/"+self.gen_random_file_name()
         if not in_file:
             file_name+=".out"
         return file_name
@@ -352,10 +356,65 @@ class ClientChannel(object):
         random_name += "-"+ str(uuid.uuid1())+".dat"
         return random_name
  
-    def get_dir(self):
+    def set_sremote_dir(self, folder_route):
+        """Sets the folder where the remote srmote files are located.
+        Used for non sremote installations which files are not placed in
+        the users home folder.
+        
+        Args:
+            folder_route: string with an absolute remote route where sremote
+                execution files are placed
+        """
+        self._sremote_dir = folder_route
+        
+    def set_tmp_dir(self, folder_route):
+        """Sets the folder where the remote temporary files will be stored
+        (both for remote calls and output of batch jobs). If it does not exist,
+        sremote will create it in the next call.
+        
+        Args:
+            folder_route: absolute remote route where sremote temporary files
+                are placed
+        """
+        self._tmp_dir = folder_route
+    
+    def set_tmp_at_home_dir(self, subfolder):
+        """Sets the folder withing the user's HOME directory where the remote
+        temporary files will be stored (both for remote calls and output of
+        batch jobs): i.e. $HOME/[sub_folder]. If it does not exist,
+        sremote will create it in the next call.
+        
+        Args:
+            folder_route: relative remote route to user's HOME dir. 
+            Sremote temporary files will be placed there.
+        """
+        self._tmp_at_home=subfolder
+        
+        
+    def get_dir_sremote(self):
         """Returns a string with the remote file system location of the sremote
         environment."""
+        if hasattr(self, "_sremote_dir"):
+            if self._sremote_dir:
+                return self._sremote_dir
         return self.get_home_dir()+"/.sremote"
+    
+    def get_dir_tmp(self):
+        """Returns a string with the remote absolute file system location of 
+        the sremote tmp dir.""" 
+        if hasattr(self, "_tmp_dir"):
+            if self._tmp_dir:
+                return self._tmp_dir
+        tmp_at_home="/.sremote/tmp"
+        if hasattr(self, "_tmp_at_home") and self._tmp_at_home:
+            tmp_at_home="/"+self._tmp_at_home
+        
+        return self.get_home_dir()+tmp_at_home
+    
+    def create_remote_tmp_dir(self):
+        """Creates the remote sremote tmp dir in the remote system"""
+        self.execute_command("/bin/mkdir", ["-p", self.get_dir_tmp()])
+        
     
     def get_pwd(self):
         """Connects to the remote server and detects the user default after
