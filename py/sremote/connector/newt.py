@@ -117,6 +117,22 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         else:
             del results
             return False
+    
+    def delete_file(self, origin_route):
+        cmdurl = ("https://newt.nersc.gov/newt/file/" + self._hostname
+                  + origin_route +"?view=read")
+
+        qdo_authkey = self._token
+    
+        results = requests.delete(cmdurl,
+                               cookies={'newt_sessionid': qdo_authkey})
+       
+        if (results.status_code == 200):
+            del results
+            return True
+        else:
+            del results
+            return False
 
         
     def execute_command(self, command, arg_list=[], keep_env=False):
