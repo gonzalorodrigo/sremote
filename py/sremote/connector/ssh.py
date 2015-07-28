@@ -46,6 +46,13 @@ class ClientSSHConnector(remote_api.ClientChannel):
         if (rc!=0):
             print "File retrieve operation error", output, err
         return rc == 0
+    
+    def delete_file(self, route):
+        output, err, rc=self.execute_command("/bin/rm", [route])
+        if rc!=0:
+            print "File delete operation error", output, err
+        return rc==0
+        
         
     def execute_command(self, command, arg_list=[], keep_env=False):
         command_list = ["ssh", self._username+"@"+self._hostname, 

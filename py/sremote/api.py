@@ -34,6 +34,7 @@ class RemoteClient(object):
         self._comms_client = comms_client
         self._registered_remote_modules = []
         self._remote_env_variables = {}
+        self._conditional_remote_env_variables = {}
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
         """Uses _comms_client to send a request to execute
@@ -65,19 +66,26 @@ class RemoteClient(object):
             not isinstance(args, types.DictType)):
             raise Exception("Wrong type for args, expected list or dict, found "
                             + str(type(args)))
-        # Encondes and sends the call request to the remote host and calls the
+        # Encodes and sends the call request to the remote host and calls the
         # interpreter to execute. Then the response is retrieved in a 
         # serialized format..
-        response_encoded, std_out = self._comms_client.place_and_execute(
+        request_obj= \
             remote.encode_call_request(module_name, method_name,
-                                       args, required_extra_modules =
-                                          self._registered_remote_modules,
-                                       remote_env_variables=
-                                            self._remote_env_variables),
-                                       keep_env=keep_env)
+                                    args, required_extra_modules =
+                                        self._registered_remote_modules,
+                                    remote_env_variables=
+                                        self._remote_env_variables,
+                                    conditional_remote_env_variables=
+                                        self._conditional_remote_env_variables)
+        response_encoded, std_out, request_location, response_location = \
+            self._comms_client.place_and_execute(
+                                    request_obj,
+                                    keep_env=keep_env)
         
         success, response = remote.decode_call_response(response_encoded)
         if (success):
+            self._comms_client.delete_file(request_location)
+            self._comms_client.delete_file(response_location)
             return response, std_out
         else:
             if response!=None:
@@ -107,7 +115,7 @@ class RemoteClient(object):
         Returns:
             True if success.
         """
-        install_dir = self._comms_client.get_dir()
+        install_dir = self._comms_client.get_dir_sremote()
         self._comms_client.execute_command("/bin/mkdir", ["-p", install_dir])
         if not self._comms_client.push_file(
                                 self.get_resource_route("setup_bootstrap.sh"), 
@@ -131,7 +139,7 @@ class RemoteClient(object):
                                    "integration")
         return True
     
-    def do_install_git_module(self, git_url, branch=None):
+    def do_install_git_module(self, git_url, branch=None, keep_after=None):
         """
         Installs a Python library in the remote host's sremote environment. The
         source of this library is a git repository. It takes two steps:
@@ -145,11 +153,14 @@ class RemoteClient(object):
                 setup.py script.
             branch: a string with the name of the branch to install. If not set,
                 master branch is installed.
+            keep_after: if set with a string test, the git module code will be
+                installed in ~/.sremote/tmp/[keep_after] and not deleted at 
+                after installation clean up.
         
         Returns:
             true if installation successes. 
         """
-        install_dir = self._comms_client.get_dir()
+        install_dir = self._comms_client.get_dir_sremote()
         if not self._comms_client.push_file(
                             self.get_resource_route("install_git_module.sh"), 
                             install_dir+"/install_git_module.sh"):
@@ -158,6 +169,8 @@ class RemoteClient(object):
         branch_arg = []
         if branch:
             branch_arg.append(branch)
+        if keep_after:
+            branch_arg.append(keep_after)
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
                         [install_dir + "/install_git_module.sh", git_url] +
                         branch_arg)
@@ -190,10 +203,14 @@ class RemoteClient(object):
         if not module_name in  self._registered_remote_modules:
             self._registered_remote_modules.append(module_name)
     
-    def register_remote_env_variable(self, name, value):
+    def register_remote_env_variable(self, name, value, only_if_no_set=False):
         """When a remote call is perfomed, environment variable *name*
-        will be set in the remote environment with value *value*."""
-        self._remote_env_variables[name]=value
+        will be set in the remote environment with value *value*. If conditional
+        is True, this variable will be set ONLY if it is not set already."""
+        if only_if_no_set:
+            self._conditional_remote_env_variables[name] = value
+        else:
+            self._remote_env_variables[name]=value
 
 
 class ClientChannel(object):
@@ -233,9 +250,11 @@ class ClientChannel(object):
         """
         
         output= self.execute_command("/bin/csh", 
-                               [self.get_dir()+"/"+self._interpreter_route, 
+                               [self.get_dir_sremote()+"/"+self._interpreter_route, 
                                method_request_reference, 
-                               method_response_reference], keep_env=keep_env)
+                               method_response_reference,
+                               self.get_dir_sremote(),
+                               self.get_dir_tmp()], keep_env=keep_env)
         
         return output
 
@@ -250,16 +269,19 @@ class ClientChannel(object):
                 call request.
 
         Returns:
-            a string containing the serialized version of the method response
-            genereated by the execition of serielized_method_call_request. Also
-            returns a string with  standard output of the execution of the
+            - a string containing the serialized version of the method response
+            generated by the execution of serielized_method_call_request.
+            - a string with  standard output of the execution of the
             remote interpreter.
+            - the location of the request in the remote system
+            - the location of the response in the remote system
         """
         response_location = self.gen_remote_response_reference()
         location = self.place_call_request(serialized_method_call_request)
         output = self.execute_request(location, response_location,
                                       keep_env=keep_env)
-        return self.retrieve_call_response(response_location), output
+        return self.retrieve_call_response(response_location), output,  \
+                location, response_location
 
     def place_call_request(self, serialized_method_call_request):
         """Places a serialized method call request in the remote host.
@@ -278,7 +300,9 @@ class ClientChannel(object):
         text_file.write(serialized_method_call_request)
         text_file.close()
         remote_file_route = self.gen_remote_temp_file_route()
-        self.push_file(reference_route, remote_file_route)
+        if (not self.push_file(reference_route, remote_file_route)):
+            self.create_remote_tmp_dir()
+            self.push_file(reference_route, remote_file_route)
         return remote_file_route
     
     def retrieve_call_response(self, method_responde_reference):
@@ -315,7 +339,7 @@ class ClientChannel(object):
         Args:
             in_file: if true the file name will be appended .out
         """
-        file_name = self.get_dir()+"/tmp/"+self.gen_random_file_name()
+        file_name = self.get_dir_tmp()+"/tmp/"+self.gen_random_file_name()
         if not in_file:
             file_name+=".out"
         return file_name
@@ -340,10 +364,65 @@ class ClientChannel(object):
         random_name += "-"+ str(uuid.uuid1())+".dat"
         return random_name
  
-    def get_dir(self):
+    def set_sremote_dir(self, folder_route):
+        """Sets the folder where the remote srmote files are located.
+        Used for non sremote installations which files are not placed in
+        the users home folder.
+        
+        Args:
+            folder_route: string with an absolute remote route where sremote
+                execution files are placed
+        """
+        self._sremote_dir = folder_route
+        
+    def set_tmp_dir(self, folder_route):
+        """Sets the folder where the remote temporary files will be stored
+        (both for remote calls and output of batch jobs). If it does not exist,
+        sremote will create it in the next call.
+        
+        Args:
+            folder_route: absolute remote route where sremote temporary files
+                are placed
+        """
+        self._tmp_dir = folder_route
+    
+    def set_tmp_at_home_dir(self, subfolder):
+        """Sets the folder withing the user's HOME directory where the remote
+        temporary files will be stored (both for remote calls and output of
+        batch jobs): i.e. $HOME/[sub_folder]. If it does not exist,
+        sremote will create it in the next call.
+        
+        Args:
+            folder_route: relative remote route to user's HOME dir. 
+            Sremote temporary files will be placed there.
+        """
+        self._tmp_at_home=subfolder
+        
+        
+    def get_dir_sremote(self):
         """Returns a string with the remote file system location of the sremote
         environment."""
+        if hasattr(self, "_sremote_dir"):
+            if self._sremote_dir:
+                return self._sremote_dir
         return self.get_home_dir()+"/.sremote"
+    
+    def get_dir_tmp(self):
+        """Returns a string with the remote absolute file system location of 
+        the sremote tmp dir.""" 
+        if hasattr(self, "_tmp_dir"):
+            if self._tmp_dir:
+                return self._tmp_dir
+        tmp_at_home="/.sremote"
+        if hasattr(self, "_tmp_at_home") and self._tmp_at_home:
+            tmp_at_home="/"+self._tmp_at_home
+        
+        return self.get_home_dir()+tmp_at_home
+    
+    def create_remote_tmp_dir(self):
+        """Creates the remote sremote tmp dir in the remote system"""
+        self.execute_command("/bin/mkdir", ["-p", self.get_dir_tmp()])
+        
     
     def get_pwd(self):
         """Connects to the remote server and detects the user default after
@@ -374,6 +453,15 @@ class ClientChannel(object):
                 pointing to the where the file should be copied.
         Returns: 
             True if successful.
+        """
+        raise Exception("Non implemented")
+    
+    def delete_file(self, route):
+        """Deletes a file from the remote file system
+        Args:
+            route: string with a valid remote filesystem file route.
+        Returns:
+            True is successful.
         """
         raise Exception("Non implemented")
     
@@ -420,9 +508,11 @@ class ServerChannel(object):
         """
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
-        target_obj_name, command_name, args, extra_modules, env_variables  = \
+        target_obj_name, command_name, args, extra_modules, env_variables, \
+            conditional_env_variables  = \
                 remote.decode_call_request(call_request_serialized)
         remote.set_environ_variables(env_variables)
+        remote.set_environ_variables(conditional_env_variables, True)
         #print call_request_serialized, target_obj_name
         success = True
         try:

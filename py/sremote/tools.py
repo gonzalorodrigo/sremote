@@ -30,6 +30,7 @@ COMMAND_TYPE = "command"
 COMMAND_ARGS = "args"
 COMMAND_MODULES_CHECK = "modules_check"
 COMMAND_ENV_VARIABLES = "enviroment_variables"
+COMMAND_COND_ENV_VARIABLES = "conditional_enviroment_variables"
 
 RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
@@ -97,8 +98,10 @@ def call_method_object(module_name, method_name, args):
                                        str(args))
     return output
 
-def set_environ_variables(dic_variables):
+def set_environ_variables(dic_variables, only_if_not_set=False):
     for (name, value) in dic_variables.iteritems():
+        if only_if_not_set and os.getenv(name)!=None:
+            continue
         os.environ[name]=value
 
 def process_remote_call(request_string):
@@ -111,14 +114,16 @@ def process_remote_call(request_string):
         result of executing whatever is specified in request_sting in
         invoked_object.
     """ 
-    module_name, method_name, args, env_variables = \
+    module_name, method_name, args, env_variables, cond_env_variables = \
                  decode_call_request(request_string)
     set_environ_variables(env_variables)
+    set_environ_variables(cond_env_variables, True)
     return call_method_object(module_name, method_name, args)
 
 def encode_call_request(module_name, command_name, args = [], 
                         required_extra_modules = [],
-                        remote_env_variables = {}):
+                        remote_env_variables = {},
+                        conditional_remote_env_variables = {}):
     """Creates a call_request_object and serializes it."""
     all_modules = required_extra_modules
     command_obj = {COMMAND_TYPE: command_name}
@@ -126,13 +131,15 @@ def encode_call_request(module_name, command_name, args = [],
     command_obj[COMMAND_MODULE] = module_name
     command_obj[COMMAND_MODULES_CHECK] = all_modules
     command_obj[COMMAND_ENV_VARIABLES] = remote_env_variables
+    command_obj[COMMAND_COND_ENV_VARIABLES] = conditional_remote_env_variables
     return serialize_obj(command_obj)
     
 def decode_call_request(call_request_serialized):
     """Deserializes and decodes a call_request_object."""
     obj = deserialize_obj(call_request_serialized)
     return obj[COMMAND_MODULE], obj[COMMAND_TYPE], obj[COMMAND_ARGS], \
-        obj[COMMAND_MODULES_CHECK], obj[COMMAND_ENV_VARIABLES]
+        obj[COMMAND_MODULES_CHECK], obj[COMMAND_ENV_VARIABLES], \
+        obj[COMMAND_COND_ENV_VARIABLES]
     
 def encode_call_response(return_value, success=True,
                          required_extra_modules=[]):

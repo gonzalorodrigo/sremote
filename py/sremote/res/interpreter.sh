@@ -22,8 +22,22 @@ if (-f /etc/profile.d/modules.csh) then
 endif 
 
 #module load python
-set install_dir="~/.sremote"
+if ( "${3}" == "") then
+	set install_dir="~/.sremote"
+else
+	set install_dir="${3}"
+endif
+
+if ( "${4}" != "") then
+	mkdir -p "${4}/tmp"
+endif
+
 cd $install_dir
 source env/bin/activate.csh
 set python_bin=`which python`
-python remote_server.py "${1}" "${2}"
+
+if ( "${4}" != "") then
+	mkdir -p "${4}"
+	cd "${4}"
+endif
+python "${install_dir}/remote_server.py" "${1}" "${2}"
