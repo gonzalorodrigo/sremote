@@ -29,7 +29,7 @@ else
 endif
 
 if ( "${4}" != "") then
-	mkdir -p "${4}"
+	mkdir -p "${4}/tmp"
 endif
 
 cd $install_dir

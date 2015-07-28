@@ -339,7 +339,7 @@ class ClientChannel(object):
         Args:
             in_file: if true the file name will be appended .out
         """
-        file_name = self.get_dir_tmp()+"/"+self.gen_random_file_name()
+        file_name = self.get_dir_tmp()+"/tmp/"+self.gen_random_file_name()
         if not in_file:
             file_name+=".out"
         return file_name
@@ -413,7 +413,7 @@ class ClientChannel(object):
         if hasattr(self, "_tmp_dir"):
             if self._tmp_dir:
                 return self._tmp_dir
-        tmp_at_home="/.sremote/tmp"
+        tmp_at_home="/.sremote"
         if hasattr(self, "_tmp_at_home") and self._tmp_at_home:
             tmp_at_home="/"+self._tmp_at_home
         

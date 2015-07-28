@@ -16,7 +16,7 @@ def valid_queue_name(value):
     return_value, out = client.do_remote_call("qdo", 
                          "valid_queue_name", args=[value])
     run_time = time.time()-start_t
-    print out
+    #print out
     print "Total Execution time of call valid_queue_name (s):", run_time
     return return_value
 
@@ -26,13 +26,14 @@ def valid_queue_name_dict(value):
     return_value, out = client.do_remote_call("qdo", "valid_queue_name", 
                                               args={"name":value})
     run_time = time.time()-start_t
-    print out
+    #print out
     print "Total Execution time of call valid_queue_name (s):", run_time
     return return_value
 
 # Creation of a connector with Newt capacities,
 connector = newt.ClientNEWTConnector(argv[1])
 connector.set_tmp_at_home_dir("private_qdo")
+connector.set_sremote_dir("/global/u1/g/gprodri/shared_qdo")
 # Authentication, this call connects remotely and retrieves the default
 # after login directory.
 if connector.auth(argv[2], argv[3]):

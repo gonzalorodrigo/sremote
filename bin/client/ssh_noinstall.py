@@ -87,8 +87,9 @@ def setting_remote_var():
 #
 # import sremote.api as remote_api
 connector = ssh.ClientSSHConnector(argv[1])
-connector.set_sremote_dir("/tmp/sremote")
-connector.set_tmp_at_home_dir("/qdo_private")
+connector.set_sremote_dir("/Users/gonzalo/Desktop/LBL-SVN/qdo/RemoteExp"
+                          "/py/sremote/res")
+connector.set_tmp_at_home_dir("qdo_private")
 connector.auth(argv[2])
 
 client = remote.RemoteClient(connector)
