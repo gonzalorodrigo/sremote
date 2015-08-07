@@ -35,6 +35,7 @@ class RemoteClient(object):
         self._registered_remote_modules = []
         self._remote_env_variables = {}
         self._conditional_remote_env_variables = {}
+        
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
         """Uses _comms_client to send a request to execute
@@ -328,6 +329,32 @@ class ClientChannel(object):
         content = "\n".join(text_file.readlines())
         text_file.close()
         return content
+    
+    
+    def do_self_discovery(self, file_name=".location"):
+        """Configures the sremote library according to the information in a file
+        placed in remote system at self.get_dir_sremote()+"/.location".
+        The file is a json text representing a dictionary with the items:
+        sremote, absolute_tmp, and relative_tmp.
+        """
+        tmp_file = self.get_local_temp_file_route()
+        if self.retrieve_file(self.get_dir_sremote()+"/"+file_name, tmp_file):
+            f = open(tmp_file, 'r')
+            text = f.read()
+            f.close()
+            config = remote.parse_location_file(text)
+            if config:
+                self.set_sremote_dir(config["sremote"])
+                if ("absolute_tmp" in config.keys()):
+                    self.set_tmp_dir(config["absolute_tmp"])
+                elif ("relative_tmp" in config.keys()):
+                    self.set_tmp_at_home_dir(config["relative_tmp"])
+                else:
+                    return False
+            else:
+                return False
+            return True
+    
     def gen_remote_response_reference(self):
         """Returns a string with a valid remote filesystem route where a
         response will be stored."""
@@ -374,6 +401,7 @@ class ClientChannel(object):
                 execution files are placed
         """
         self._sremote_dir = folder_route
+    
         
     def set_tmp_dir(self, folder_route):
         """Sets the folder where the remote temporary files will be stored

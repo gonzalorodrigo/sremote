@@ -24,6 +24,7 @@ The method response is a dictionary with two times:
 import json
 import os
 import types
+from __builtin__ import False
 
 COMMAND_MODULE = "module"
 COMMAND_TYPE = "command"
@@ -224,7 +225,7 @@ def get_module_version(module_name):
 def check_modules_versions(module_dic):
     """Checks a dictionary of module_name:version against the ones installed
     in the execution environment. It checks all the modules and raises an
-    execption at the end. Conditions for exception for each module:
+    exeception at the end. Conditions for exception for each module:
     - Module not present in execution environment.
     - Module version is none (note present in remote environment.
     - Module versions miss-match.
@@ -246,4 +247,33 @@ def check_modules_versions(module_dic):
     if not all_modules_ok:
         raise(ExceptionRemoteModulesError(msj))
 
+def parse_location_file(text):
+    """Decodes a JSON object from a string into a dictionary. This object
+    represents the configuration of the sremote library.
+    Args:
+        text: string containing a serialized json object. This object has the
+            following requirements:
+                - srmote: (required) containing a string pointing to a remote 
+                  filesystem location for the sremote endpoint.
+                - relative_tmp: containing a string pointing to a remote 
+                  filesystem location for the sremote tmp. This location is
+                  relative to the user's home directory.
+                - absolute_tmp: containing a string pointing to a remote 
+                  filesystem location for the sremote tmp. This location is
+                  an absolute route.
+            Either one of relative_tmp or absolute_tmp has to be set.
+    Returns: a dictionary with the json object content. Returns false if the
+        text cannot be deserialized of fields are missing.
+    """
+    try:
+        obj = json.loads(text)
+    except Exception as e:
+        return False
+    print obj
+    if "sremote" in obj.keys():
+        if ((not "relative_tmp" in obj.keys()) and 
+            (not "absolute_tmp" in obj.keys())):
+            return False
+    return obj
+    
 
