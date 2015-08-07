@@ -336,6 +336,14 @@ class ClientChannel(object):
         placed in remote system at self.get_dir_sremote()+"/.location".
         The file is a json text representing a dictionary with the items:
         sremote, absolute_tmp, and relative_tmp.
+        
+        Args:
+            file_name: name of the file containing the configuration. This is
+                used to specity different files for different applications
+                using .sremote.
+        Returns:
+            True, if file was found, parsed correctly, and information was
+            correct. False otherwise.  
         """
         tmp_file = self.get_local_temp_file_route()
         if self.retrieve_file(self.get_dir_sremote()+"/"+file_name, tmp_file):
