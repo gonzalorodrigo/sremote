@@ -421,7 +421,7 @@ class ClientChannel(object):
     
     def create_remote_tmp_dir(self):
         """Creates the remote sremote tmp dir in the remote system"""
-        self.execute_command("/bin/mkdir", ["-p", self.get_dir_tmp()])
+        self.execute_command("/bin/mkdir", ["-p", self.get_dir_tmp()+"/tmp"])
         
     
     def get_pwd(self):
