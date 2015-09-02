@@ -35,6 +35,7 @@ class RemoteClient(object):
         self._registered_remote_modules = []
         self._remote_env_variables = {}
         self._conditional_remote_env_variables = {}
+        self._remote_path_addons = []
         
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
@@ -77,7 +78,9 @@ class RemoteClient(object):
                                     remote_env_variables=
                                         self._remote_env_variables,
                                     conditional_remote_env_variables=
-                                        self._conditional_remote_env_variables)
+                                        self._conditional_remote_env_variables,
+                                    remote_path_addons=
+                                        self._remote_path_addons)
         response_encoded, std_out, request_location, response_location = \
             self._comms_client.place_and_execute(
                                     request_obj,
@@ -212,6 +215,9 @@ class RemoteClient(object):
             self._conditional_remote_env_variables[name] = value
         else:
             self._remote_env_variables[name]=value
+    
+    def register_remote_env_path(self, path):
+        self._remote_path_addons.append(path)
 
 
 class ClientChannel(object):
@@ -545,10 +551,11 @@ class ServerChannel(object):
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
         target_obj_name, command_name, args, extra_modules, env_variables, \
-            conditional_env_variables  = \
+            conditional_env_variables, remote_path_addon = \
                 remote.decode_call_request(call_request_serialized)
         remote.set_environ_variables(env_variables)
         remote.set_environ_variables(conditional_env_variables, True)
+        remote.add_environ_path(remote_path_addon)
         #print call_request_serialized, target_obj_name
         success = True
         try:

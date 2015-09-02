@@ -59,6 +59,7 @@ def setting_remote_var():
     client.register_remote_env_variable("myVar", "myValue")
     client.register_remote_env_variable("HOME", "This not", only_if_no_set=True)
     client.register_remote_env_variable("HOME_B", "This YES", only_if_no_set=True)
+    client.register_remote_env_path("/opt")
     
     
     return_value, out = client.do_remote_call("os", "getenv", 
@@ -76,6 +77,11 @@ def setting_remote_var():
                                               )
     print "HOME_B", return_value
     
+    return_value, out = client.do_remote_call("os", "getenv", 
+                                              args=["PATH"]
+                                              )
+    
+    print "Is opt there?", return_value
         
 
 
