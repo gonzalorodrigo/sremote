@@ -35,6 +35,7 @@ class RemoteClient(object):
         self._registered_remote_modules = []
         self._remote_env_variables = {}
         self._conditional_remote_env_variables = {}
+        self._remote_path_addons = []
         
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
@@ -212,6 +213,9 @@ class RemoteClient(object):
             self._conditional_remote_env_variables[name] = value
         else:
             self._remote_env_variables[name]=value
+    
+    def register_remote_env_path(self, path):
+        self._remote_path_addons.append(path)
 
 
 class ClientChannel(object):
