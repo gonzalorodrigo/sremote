@@ -24,6 +24,7 @@ The method response is a dictionary with two times:
 import json
 import os
 import types
+from __builtin__ import False
 
 COMMAND_MODULE = "module"
 COMMAND_TYPE = "command"
@@ -31,6 +32,8 @@ COMMAND_ARGS = "args"
 COMMAND_MODULES_CHECK = "modules_check"
 COMMAND_ENV_VARIABLES = "enviroment_variables"
 COMMAND_COND_ENV_VARIABLES = "conditional_enviroment_variables"
+COMMAND_PATH_ADDONS = "path_addons"
+
 
 RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
@@ -104,6 +107,13 @@ def set_environ_variables(dic_variables, only_if_not_set=False):
             continue
         os.environ[name]=value
 
+def add_environ_path(path_list):
+    if path_list:
+        old_path = os.getenv("PATH")
+        for path in path_list:
+            old_path+=":"+path
+        os.environ["PATH"]=old_path
+
 def process_remote_call(request_string):
     """Deserializes a call_request and executes it in invoked_object.
     
@@ -114,16 +124,19 @@ def process_remote_call(request_string):
         result of executing whatever is specified in request_sting in
         invoked_object.
     """ 
-    module_name, method_name, args, env_variables, cond_env_variables = \
+    module_name, method_name, args, env_variables, cond_env_variables, \
+        path_addons= \
                  decode_call_request(request_string)
     set_environ_variables(env_variables)
     set_environ_variables(cond_env_variables, True)
+    add_environ_path(path_addons)
     return call_method_object(module_name, method_name, args)
 
 def encode_call_request(module_name, command_name, args = [], 
                         required_extra_modules = [],
                         remote_env_variables = {},
-                        conditional_remote_env_variables = {}):
+                        conditional_remote_env_variables = {},
+                        remote_path_addons = []):
     """Creates a call_request_object and serializes it."""
     all_modules = required_extra_modules
     command_obj = {COMMAND_TYPE: command_name}
@@ -132,6 +145,7 @@ def encode_call_request(module_name, command_name, args = [],
     command_obj[COMMAND_MODULES_CHECK] = all_modules
     command_obj[COMMAND_ENV_VARIABLES] = remote_env_variables
     command_obj[COMMAND_COND_ENV_VARIABLES] = conditional_remote_env_variables
+    command_obj[COMMAND_PATH_ADDONS] = remote_path_addons
     return serialize_obj(command_obj)
     
 def decode_call_request(call_request_serialized):
@@ -139,7 +153,7 @@ def decode_call_request(call_request_serialized):
     obj = deserialize_obj(call_request_serialized)
     return obj[COMMAND_MODULE], obj[COMMAND_TYPE], obj[COMMAND_ARGS], \
         obj[COMMAND_MODULES_CHECK], obj[COMMAND_ENV_VARIABLES], \
-        obj[COMMAND_COND_ENV_VARIABLES]
+        obj[COMMAND_COND_ENV_VARIABLES], obj[COMMAND_PATH_ADDONS]
     
 def encode_call_response(return_value, success=True,
                          required_extra_modules=[]):
@@ -224,7 +238,7 @@ def get_module_version(module_name):
 def check_modules_versions(module_dic):
     """Checks a dictionary of module_name:version against the ones installed
     in the execution environment. It checks all the modules and raises an
-    execption at the end. Conditions for exception for each module:
+    exeception at the end. Conditions for exception for each module:
     - Module not present in execution environment.
     - Module version is none (note present in remote environment.
     - Module versions miss-match.
@@ -246,4 +260,33 @@ def check_modules_versions(module_dic):
     if not all_modules_ok:
         raise(ExceptionRemoteModulesError(msj))
 
+def parse_location_file(text):
+    """Decodes a JSON object from a string into a dictionary. This object
+    represents the configuration of the sremote library.
+    Args:
+        text: string containing a serialized json object. This object has the
+            following requirements:
+                - srmote: (required) containing a string pointing to a remote 
+                  filesystem location for the sremote endpoint.
+                - relative_tmp: containing a string pointing to a remote 
+                  filesystem location for the sremote tmp. This location is
+                  relative to the user's home directory.
+                - absolute_tmp: containing a string pointing to a remote 
+                  filesystem location for the sremote tmp. This location is
+                  an absolute route.
+            Either one of relative_tmp or absolute_tmp has to be set.
+    Returns: a dictionary with the json object content. Returns false if the
+        text cannot be deserialized of fields are missing.
+    """
+    try:
+        obj = json.loads(text)
+    except Exception as e:
+        return False
+    print obj
+    if "sremote" in obj.keys():
+        if ((not "relative_tmp" in obj.keys()) and 
+            (not "absolute_tmp" in obj.keys())):
+            return False
+    return obj
+    
 

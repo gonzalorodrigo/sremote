@@ -35,6 +35,8 @@ class RemoteClient(object):
         self._registered_remote_modules = []
         self._remote_env_variables = {}
         self._conditional_remote_env_variables = {}
+        self._remote_path_addons = []
+        
 
     def do_remote_call(self, module_name, method_name, args=[], keep_env=False):
         """Uses _comms_client to send a request to execute
@@ -76,7 +78,9 @@ class RemoteClient(object):
                                     remote_env_variables=
                                         self._remote_env_variables,
                                     conditional_remote_env_variables=
-                                        self._conditional_remote_env_variables)
+                                        self._conditional_remote_env_variables,
+                                    remote_path_addons=
+                                        self._remote_path_addons)
         response_encoded, std_out, request_location, response_location = \
             self._comms_client.place_and_execute(
                                     request_obj,
@@ -135,7 +139,7 @@ class RemoteClient(object):
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
                             [install_dir+"/setup_bootstrap.sh"])
         print "Install result:", rc, output, err
-        self.do_install_git_module("https://github.com/gonzalorodrigo/qdo_interpreter.git",
+        self.do_install_git_module("https://github.com/gonzalorodrigo/sremote.git",
                                    "integration")
         return True
     
@@ -211,6 +215,9 @@ class RemoteClient(object):
             self._conditional_remote_env_variables[name] = value
         else:
             self._remote_env_variables[name]=value
+    
+    def register_remote_env_path(self, path):
+        self._remote_path_addons.append(path)
 
 
 class ClientChannel(object):
@@ -328,6 +335,40 @@ class ClientChannel(object):
         content = "\n".join(text_file.readlines())
         text_file.close()
         return content
+    
+    
+    def do_self_discovery(self, file_name=".location"):
+        """Configures the sremote library according to the information in a file
+        placed in remote system at self.get_dir_sremote()+"/.location".
+        The file is a json text representing a dictionary with the items:
+        sremote, absolute_tmp, and relative_tmp.
+        
+        Args:
+            file_name: name of the file containing the configuration. This is
+                used to specity different files for different applications
+                using .sremote.
+        Returns:
+            True, if file was found, parsed correctly, and information was
+            correct. False otherwise.  
+        """
+        tmp_file = self.get_local_temp_file_route()
+        if self.retrieve_file(self.get_dir_sremote()+"/"+file_name, tmp_file):
+            f = open(tmp_file, 'r')
+            text = f.read()
+            f.close()
+            config = remote.parse_location_file(text)
+            if config:
+                self.set_sremote_dir(config["sremote"])
+                if ("absolute_tmp" in config.keys()):
+                    self.set_tmp_dir(config["absolute_tmp"])
+                elif ("relative_tmp" in config.keys()):
+                    self.set_tmp_at_home_dir(config["relative_tmp"])
+                else:
+                    return False
+            else:
+                return False
+            return True
+    
     def gen_remote_response_reference(self):
         """Returns a string with a valid remote filesystem route where a
         response will be stored."""
@@ -374,6 +415,7 @@ class ClientChannel(object):
                 execution files are placed
         """
         self._sremote_dir = folder_route
+    
         
     def set_tmp_dir(self, folder_route):
         """Sets the folder where the remote temporary files will be stored
@@ -421,7 +463,7 @@ class ClientChannel(object):
     
     def create_remote_tmp_dir(self):
         """Creates the remote sremote tmp dir in the remote system"""
-        self.execute_command("/bin/mkdir", ["-p", self.get_dir_tmp()])
+        self.execute_command("/bin/mkdir", ["-p", self.get_dir_tmp()+"/tmp"])
         
     
     def get_pwd(self):
@@ -509,10 +551,11 @@ class ServerChannel(object):
         call_request_serialized = self.retrieve_call_request(
             method_call_request_pointer)
         target_obj_name, command_name, args, extra_modules, env_variables, \
-            conditional_env_variables  = \
+            conditional_env_variables, remote_path_addon = \
                 remote.decode_call_request(call_request_serialized)
         remote.set_environ_variables(env_variables)
         remote.set_environ_variables(conditional_env_variables, True)
+        remote.add_environ_path(remote_path_addon)
         #print call_request_serialized, target_obj_name
         success = True
         try:
