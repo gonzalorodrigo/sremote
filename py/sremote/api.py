@@ -469,7 +469,9 @@ class ClientChannel(object):
     def get_pwd(self):
         """Connects to the remote server and detects the user default after
         login directory."""
-        dir_string =  self.execute_command("/bin/pwd")[0]
+        dir_string, err, rc =  self.execute_command("/bin/pwd")
+        if rc!=0:
+            return None
         return dir_string.replace("\n", "").replace("\r","")
  
     # OS and comms channel dependant methods to be implemented by the concrete
