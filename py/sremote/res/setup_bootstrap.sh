@@ -30,7 +30,7 @@ set git_bin=`which git`
 set easy_install_bin=`which easy_install`
 set virtualenv_bin=`which virtualenv`
 
-set install_dir="~/.sremote"
+set install_dir="$1"
 cd $install_dir
 
 

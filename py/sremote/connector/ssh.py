@@ -17,7 +17,10 @@ class ClientSSHConnector(remote_api.ClientChannel):
         occur until an actual operation is executed. It no ssh key is
         configured in the client, future operations will ask for password."""
         self._username = username
-        self._home_dir = self.get_pwd()
+        if home_dir==None:
+            self._home_dir = self.get_pwd()
+        else:
+            self._home_dir = home_dir
         self._token = username
         return self.status()
     
@@ -59,6 +62,8 @@ class ClientSSHConnector(remote_api.ClientChannel):
                         command] + arg_list
         p = subprocess.Popen(command_list, stdout=subprocess.PIPE)
         output, err = p.communicate()
+        if err is None:
+            err=""
         rc = p.returncode
         return output, err, rc
     

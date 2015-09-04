@@ -137,11 +137,13 @@ class RemoteClient(object):
             print "Error placing python interpreter script."
             return False
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
-                            [install_dir+"/setup_bootstrap.sh"])
-        print "Install result:", rc, output, err
-        self.do_install_git_module("https://github.com/gonzalorodrigo/sremote.git",
-                                   "integration")
-        return True
+                            [install_dir+"/setup_bootstrap.sh", install_dir])
+        if rc!=0:
+            print "setup_bootstrap.sh execution error", output, err
+            return False
+        return self.do_install_git_module(
+                                "https://github.com/gonzalorodrigo/sremote.git",
+                                "integration")
     
     def do_install_git_module(self, git_url, branch=None, keep_after=None):
         """
@@ -176,9 +178,11 @@ class RemoteClient(object):
         if keep_after:
             branch_arg.append(keep_after)
         output, err, rc = self._comms_client.execute_command("/bin/csh", 
-                        [install_dir + "/install_git_module.sh", git_url] +
-                        branch_arg)
-        print "Install result:", rc, output, err
+                        [install_dir + "/install_git_module.sh", install_dir, 
+                        git_url] + branch_arg)
+        if rc!=0:
+            print "GIT Module Install error:", output, err
+            return False
         return True
     
     def get_resource_route(self, resource, package = "sremote.res"):
@@ -256,8 +260,8 @@ class ClientChannel(object):
             
         """
         
-        output= self.execute_command("/bin/csh", 
-                               [self.get_dir_sremote()+"/"+self._interpreter_route, 
+        output, err, rc= self.execute_command("/bin/csh", 
+                            [self.get_dir_sremote()+"/"+self._interpreter_route, 
                                method_request_reference, 
                                method_response_reference,
                                self.get_dir_sremote(),
@@ -368,6 +372,8 @@ class ClientChannel(object):
             else:
                 return False
             return True
+        else:
+            return False
     
     def gen_remote_response_reference(self):
         """Returns a string with a valid remote filesystem route where a

@@ -7,7 +7,7 @@ variables required:
   edison, hopper, cori). If not set it will use edion 
 
 
- python -m unittest test_newt
+ python -m unittest test_newt_connector.TestNewt
  
 """
 
