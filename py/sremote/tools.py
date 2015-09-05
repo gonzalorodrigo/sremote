@@ -37,7 +37,7 @@ COMMAND_PATH_ADDONS = "path_addons"
 
 RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
-RESPONSE_VERSION = "srmote_version"
+RESPONSE_VERSION = "sremote_version"
 RESPONSE_MODULES_CHECK = "modules_check"
 
 _serializer = json
@@ -124,9 +124,13 @@ def process_remote_call(request_string):
         result of executing whatever is specified in request_sting in
         invoked_object.
     """ 
-    module_name, method_name, args, env_variables, cond_env_variables, \
-        path_addons= \
+    module_name, method_name, args, modules_check, env_variables, \
+        cond_env_variables, path_addons= \
                  decode_call_request(request_string)
+    for mod in modules_check:
+        if not module_exists(mod):
+            raise ExceptionRemoteExecError("Module "+ module_name +
+                                           " could not be imported")
     set_environ_variables(env_variables)
     set_environ_variables(cond_env_variables, True)
     add_environ_path(path_addons)
@@ -178,7 +182,7 @@ def decode_call_response(call_response_serialized):
         raise ExceptionRemoteNotSetup("SREMOTE Version info not present in"+
                                       " response")
     if response_obj[RESPONSE_VERSION] != version:
-        raise ExceptionRemoteNotSetup("SERMOTE version miss-match: remote("
+        raise ExceptionRemoteNotSetup("SREMOTE version miss-match: remote("
                                       + str(response_obj[RESPONSE_VERSION])
                                       +") != local("+str(version)
                                       +")")
