@@ -177,6 +177,8 @@ class TestTools(unittest.TestCase):
                            ))
                          
     def test_check_modules_versions(self):
+        old_get_module_version= remote.get_module_version
+        old_module_exists = remote.module_exists
         remote.get_module_version = _fake_get_module_version
         remote.module_exists = _fake_module_exists
         
@@ -186,6 +188,9 @@ class TestTools(unittest.TestCase):
             remote.check_modules_versions({"MODULE1": "1.0", "MODULE2": "3.0"})
         with self.assertRaises(remote.ExceptionRemoteModulesError):
             remote.check_modules_versions({"MODULE3": "1.0", "MODULE2": "3.0"})
+        
+        remote.get_module_version=old_get_module_version 
+        remote.module_exists=old_module_exists
             
     def test_parse_location_file(self):
         text = """
@@ -223,9 +228,6 @@ class TestTools(unittest.TestCase):
         """
         self.assertFalse(remote.parse_location_file(text))
         
-        
-    #TODO(gonzalorodrigo): test_check_modules_version, test_parse_location_file
-
 def _fake_get_module_version(module_name):
     if (module_name == "MODULE1"):
         return "1.0"
