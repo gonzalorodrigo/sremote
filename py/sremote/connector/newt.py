@@ -12,6 +12,7 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         self._interpreter_route = interpreter_route
         self._hostname = hostname;
         self._token = None
+        self._home_dir=None
     
     
     def auth(self, username, password=None, token=None, home_dir=None):
@@ -149,11 +150,14 @@ class ClientNEWTConnector(remote_api.ClientChannel):
         
         results = requests.post(cmdurl, data,
                                 cookies={'newt_sessionid': qdo_authkey})
-        #print results
-        output = results.json()["output"]
-        error = results.json()["error"]
-        del results
-        return output, error, 0
+        if results.status_code==200:
+            output = results.json()["output"]
+            error = results.json()["error"]
+            del results
+            return (output, error, 0)
+        else: 
+            del results
+            return (None, None, -1)
     
     def get_home_dir(self):
         return self._home_dir

@@ -23,8 +23,8 @@ The method response is a dictionary with two times:
 
 import json
 import os
+import pkg_resources
 import types
-from __builtin__ import False
 
 COMMAND_MODULE = "module"
 COMMAND_TYPE = "command"
@@ -37,7 +37,7 @@ COMMAND_PATH_ADDONS = "path_addons"
 
 RESPONSE_STATUS = "success"
 RESPONSE_CONTENT = "return_value"
-RESPONSE_VERSION = "srmote_version"
+RESPONSE_VERSION = "sremote_version"
 RESPONSE_MODULES_CHECK = "modules_check"
 
 _serializer = json
@@ -124,9 +124,13 @@ def process_remote_call(request_string):
         result of executing whatever is specified in request_sting in
         invoked_object.
     """ 
-    module_name, method_name, args, env_variables, cond_env_variables, \
-        path_addons= \
+    module_name, method_name, args, modules_check, env_variables, \
+        cond_env_variables, path_addons= \
                  decode_call_request(request_string)
+    for mod in modules_check:
+        if not module_exists(mod):
+            raise ExceptionRemoteExecError("Module "+ module_name +
+                                           " could not be imported")
     set_environ_variables(env_variables)
     set_environ_variables(cond_env_variables, True)
     add_environ_path(path_addons)
@@ -178,7 +182,7 @@ def decode_call_response(call_response_serialized):
         raise ExceptionRemoteNotSetup("SREMOTE Version info not present in"+
                                       " response")
     if response_obj[RESPONSE_VERSION] != version:
-        raise ExceptionRemoteNotSetup("SERMOTE version miss-match: remote("
+        raise ExceptionRemoteNotSetup("SREMOTE version miss-match: remote("
                                       + str(response_obj[RESPONSE_VERSION])
                                       +") != local("+str(version)
                                       +")")
@@ -217,7 +221,6 @@ def module_exists(module_name):
         return False
     else:
         return True
-import pkg_resources
 
 def get_sremote_version():
     """returns the version stated in the setup.py of sremote package"""
@@ -259,6 +262,7 @@ def check_modules_versions(module_dic):
                 str(version))+")"
     if not all_modules_ok:
         raise(ExceptionRemoteModulesError(msj))
+    return True
 
 def parse_location_file(text):
     """Decodes a JSON object from a string into a dictionary. This object
@@ -283,7 +287,9 @@ def parse_location_file(text):
     except Exception as e:
         return False
     print obj
-    if "sremote" in obj.keys():
+    if not "sremote" in obj.keys():
+        return False
+    elif "sremote" in obj.keys():
         if ((not "relative_tmp" in obj.keys()) and 
             (not "absolute_tmp" in obj.keys())):
             return False
