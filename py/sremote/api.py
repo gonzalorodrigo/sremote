@@ -356,7 +356,7 @@ class ClientChannel(object):
             correct. False otherwise.  
         """
         tmp_file = self.get_local_temp_file_route()
-        if self.retrieve_file(self.get_dir_sremote()+"/"+file_name, tmp_file):
+        if self.retrieve_file(self.get_dir_location_dir()+"/"+file_name, tmp_file):
             f = open(tmp_file, 'r')
             text = f.read()
             f.close()
@@ -453,6 +453,11 @@ class ClientChannel(object):
         if hasattr(self, "_sremote_dir"):
             if self._sremote_dir:
                 return self._sremote_dir
+        return self.get_home_dir()+"/.sremote"
+    
+    def get_dir_location_dir(self):
+        """Returns a string with the remote file system location of the sremote
+        environment."""
         return self.get_home_dir()+"/.sremote"
     
     def get_dir_tmp(self):
