@@ -2,7 +2,7 @@
 the current user can do "passwordless" ssh to localhost.
 
 
- python -m unittest test_ssh_connector
+ python -m unittest test_ssh_connector.TestSsh
  
 """
 
