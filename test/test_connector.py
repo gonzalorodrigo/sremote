@@ -19,12 +19,12 @@ class TestClientChannel(unittest.TestCase):
         raise NotImplementedError
         
     def test_push_get_file(self):
-        orig_route= _get_current_dir()+"/file.tmp"
-        _create_file(orig_route, "Hola!")
+        orig_route= get_current_dir()+"/file.tmp"
+        create_file(orig_route, "Hola!")
         
         dest_route = "/tmp/file.{0}.tmp".format((calendar.timegm(time.gmtime()))
                                                 )
-        local_dest_route=_get_current_dir()+"/download.tmp"
+        local_dest_route=get_current_dir()+"/download.tmp"
         
         self.assertFalse(self._connector.retrieve_file(dest_route, 
                                                        local_dest_route))
@@ -42,15 +42,15 @@ class TestClientChannel(unittest.TestCase):
         local_file.close()
         
     def test_delete_file(self):
-        orig_route=_get_current_dir()+"/del_file.tmp"
-        _create_file(orig_route, "I should be deleted!")
+        orig_route=get_current_dir()+"/del_file.tmp"
+        create_file(orig_route, "I should be deleted!")
         dest_route = "/tmp/file.{0}.tmp".format((calendar.timegm(time.gmtime()))
                                                 )
         self.assertTrue(self._connector.push_file(orig_route, dest_route))
         
         self.assertTrue(self._connector.delete_file(dest_route))
         
-        local_dest_route=_get_current_dir()+"/download.tmp"
+        local_dest_route=get_current_dir()+"/download.tmp"
         
         self.assertFalse(self._connector.retrieve_file(dest_route, 
                                                        local_dest_route))
@@ -79,9 +79,9 @@ class TestClientChannel(unittest.TestCase):
         self.assertTrue(self._connector.execute_command("/bin/mkdir",
                                             ["-p", 
                                              "/tmp/sremote_test/.sremote"]))
-        local_disc_file  = _get_current_dir()+"/selfdisc.rc"
+        local_disc_file  = get_current_dir()+"/selfdisc.rc"
         remote_disc_file = "/tmp/sremote_test/.sremote/selfdisc.rc"
-        _create_file(local_disc_file, """
+        create_file(local_disc_file, """
             {"sremote": "/tmp/sremote_test/selfd",
             "relative_tmp": "local_tmp"
             }
@@ -101,9 +101,9 @@ class TestClientChannel(unittest.TestCase):
                                             ["-p", 
                                              "/tmp/sremote_test/.sremote"]))
         
-        local_disc_file  = _get_current_dir()+"/selfdisc.rc"
+        local_disc_file  = get_current_dir()+"/selfdisc.rc"
         remote_disc_file = "/tmp/sremote_test/.sremote/selfdisc.rc"
-        _create_file(local_disc_file, """
+        create_file(local_disc_file, """
             {"sremote": "/tmp/sremote_test/selfd",
             "absolute_tmp": "/tmp/sremote_test/tmp"
             }
@@ -175,10 +175,10 @@ class TestClientChannel(unittest.TestCase):
         
         self.assertTrue(client.do_bootstrap_install())
     
-def _get_current_dir():
+def get_current_dir():
     return os.path.dirname(os.path.realpath(__file__));
 
-def _create_file(route, content):
+def create_file(route, content):
     orig_file = file(route, "w")
     orig_file.write(content)
     orig_file.close()
