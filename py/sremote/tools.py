@@ -23,8 +23,8 @@ The method response is a dictionary with two times:
 
 import json
 import os
+import pkg_resources
 import types
-from __builtin__ import False
 
 COMMAND_MODULE = "module"
 COMMAND_TYPE = "command"
@@ -221,7 +221,6 @@ def module_exists(module_name):
         return False
     else:
         return True
-import pkg_resources
 
 def get_sremote_version():
     """returns the version stated in the setup.py of sremote package"""
@@ -263,6 +262,7 @@ def check_modules_versions(module_dic):
                 str(version))+")"
     if not all_modules_ok:
         raise(ExceptionRemoteModulesError(msj))
+    return True
 
 def parse_location_file(text):
     """Decodes a JSON object from a string into a dictionary. This object
@@ -287,7 +287,9 @@ def parse_location_file(text):
     except Exception as e:
         return False
     print obj
-    if "sremote" in obj.keys():
+    if not "sremote" in obj.keys():
+        return False
+    elif "sremote" in obj.keys():
         if ((not "relative_tmp" in obj.keys()) and 
             (not "absolute_tmp" in obj.keys())):
             return False
