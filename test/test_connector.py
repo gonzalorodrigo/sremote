@@ -77,16 +77,17 @@ class TestClientChannel(unittest.TestCase):
     def test_do_self_discovery_relative(self):
         self._connector.set_sremote_dir("/tmp/sremote_test/")
         self.assertTrue(self._connector.execute_command("/bin/mkdir",
-                                                        ["/tmp/sremote_test/"]))
-        
+                                            ["-p", 
+                                             "/tmp/sremote_test/.sremote"]))
         local_disc_file  = _get_current_dir()+"/selfdisc.rc"
-        remote_disc_file = "/tmp/sremote_test/selfdisc.rc"
+        remote_disc_file = "/tmp/sremote_test/.sremote/selfdisc.rc"
         _create_file(local_disc_file, """
             {"sremote": "/tmp/sremote_test/selfd",
             "relative_tmp": "local_tmp"
             }
         """)
         self._connector.push_file(local_disc_file, remote_disc_file)
+        self._connector._home_dir="/tmp/sremote_test"
         self.assertTrue(self._connector.do_self_discovery(
                                                 file_name="selfdisc.rc"))
         self.assertEqual(self._connector.get_dir_sremote(), 
@@ -97,15 +98,17 @@ class TestClientChannel(unittest.TestCase):
     def test_do_self_discovery_absolute(self):
         self._connector.set_sremote_dir("/tmp/sremote_test/")
         self.assertTrue(self._connector.execute_command("/bin/mkdir",
-                                                        ["/tmp/sremote_test/"]))
+                                            ["-p", 
+                                             "/tmp/sremote_test/.sremote"]))
         
         local_disc_file  = _get_current_dir()+"/selfdisc.rc"
-        remote_disc_file = "/tmp/sremote_test/selfdisc.rc"
+        remote_disc_file = "/tmp/sremote_test/.sremote/selfdisc.rc"
         _create_file(local_disc_file, """
             {"sremote": "/tmp/sremote_test/selfd",
             "absolute_tmp": "/tmp/sremote_test/tmp"
             }
         """)
+        self._connector._home_dir="/tmp/sremote_test"
         self._connector.push_file(local_disc_file, remote_disc_file)
         self.assertTrue(self._connector.do_self_discovery(
                                                 file_name="selfdisc.rc"))

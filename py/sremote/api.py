@@ -143,7 +143,7 @@ class RemoteClient(object):
             return False
         return self.do_install_git_module(
                                 "https://github.com/gonzalorodrigo/sremote.git",
-                                "integration")
+                                "unittest")
     
     def do_install_git_module(self, git_url, branch=None, keep_after=None):
         """
@@ -356,7 +356,8 @@ class ClientChannel(object):
             correct. False otherwise.  
         """
         tmp_file = self.get_local_temp_file_route()
-        if self.retrieve_file(self.get_dir_location_dir()+"/"+file_name, tmp_file):
+        if self.retrieve_file(self.get_dir_location_dir()+"/"+file_name, 
+                              tmp_file):
             f = open(tmp_file, 'r')
             text = f.read()
             f.close()
