@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# This script installs a remote endpoint to be used by sremote t the place where
+# This script installs a remote endpoint to be used by sremote at the place where
 # it is invoked e.g:
 # 
 # ~/$ cd folder
-# ~/folder/$ ./deploy_remote_endpoint.sh
+# ~/folder/$ ./deploy_sremote_endpoint.sh
 #
 
 
