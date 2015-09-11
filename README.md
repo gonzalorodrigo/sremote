@@ -132,7 +132,7 @@ SSH connector example. It self-deploys, sets an environ variable and reads it.
         "myValue"
         
         
-NERSC connector example.t self-deploys, sets an environ variable and reads it.
+NERSC connector example. It self-deploys, sets an environ variable and reads it.
 
     import sremote.api as remote
     import sremote.connector.newt as newt
