@@ -20,7 +20,7 @@ remote host and returns the corresponding result and stdout.
 
 
 
-
+```
     Science Gateway                Newt Server             Edison
     ========================      ==========    ==============================
     |Remote      | NEWT    | ---> | Newt @ | -> | sremote |-> q=qdo.connect()|
@@ -28,6 +28,7 @@ remote host and returns the corresponding result and stdout.
     ========================      ==========    ==============================
                                                                          |
     python type response <------------JSON response----------------------|
+```
 
 ## Components
 
