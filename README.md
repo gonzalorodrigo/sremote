@@ -6,7 +6,7 @@
 SREMOTE stands for Simpler REMOTE: a package to execute Python remotely without
 all the usual complications that other packages offer.
 
-In sremote there are Three basic concepts:
+In sremote there are Three basic concepedts:
 
 - Connector: A connector is a class that offers methods that allow to: copy
 files to, retrieve files from, and execute shell commands at a remote machine.
@@ -124,6 +124,7 @@ SSH connector example. It self-deploys, sets an environ variable and reads it.
     client = remote.RemoteClient(connector)
     client.do_bootstrap_install()
     
+    #- Previous code is only required to execute once.
     client.register_remote_env_variable("myVar", "myValue")
     return_value, out = client.do_remote_call("os", "getenv", 
                                           args=["myVar"]
@@ -137,12 +138,13 @@ NERSC connector example. It self-deploys, sets an environ variable and reads it.
     import sremote.api as remote
     import sremote.connector.newt as newt
     
-    connector = newt.ClientNEWTConnector("edisong")
+    connector = newt.ClientNEWTConnector("edison")
     connector.auth("username", "password")
     
     client = remote.RemoteClient(connector)
     client.do_bootstrap_install()
     
+    #- Previous code is only required to execute once.
     client.register_remote_env_variable("myVar", "myValue")
     return_value, out = client.do_remote_call("os", "getenv", 
                                           args=["myVar"]
