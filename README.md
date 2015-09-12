@@ -1,12 +1,29 @@
 # SRemote: Simple Remote tool for Python.
 
-    
 ## Introduction
 
 SREMOTE stands for Simpler REMOTE: a package to execute Python remotely without
 all the usual complications that other packages offer.
 
-In sremote there are Three basic concepedts:
+The motivation of this library is that most remoting frameworks, although very
+complete and powerful require quite some work to setup and deploy. Even more
+if the a new connector (element that bring the commands from the local
+to the remote host) needs to be re-written (e.g. run over a REST API), using
+such libraries can become a nightmare.
+
+**SREMOTE simplifies the model**:it self deploys in the remote host, it
+can install libraries and connectors are extremely simple to implement.
+**A connector must only support three functions**:
+
+* Execute shell commands in the remote host.
+
+* Push files to the remote host
+
+* Retrieving files from the remote host.
+   
+## Concepts
+
+In sremote there are Three basic concepts:
 
 - Connector: A connector is a class that offers methods that allow to: copy
 files to, retrieve files from, and execute shell commands at a remote machine.
@@ -19,17 +36,15 @@ and stout to the connector.
 remote host and returns the corresponding result and stdout.
 
 
-
 ```
-    Science Gateway                Newt Server             Edison
-    ========================      ==========    ==============================
-    |Remote      | NEWT    | ---> | Newt @ | -> | sremote |-> q=qdo.connect()|
-    |Client      |connector|(rest)| NERSC  |    | endpoint|   q.list()       |
-    ========================      ==========    ==============================
+    Local Machine                 Newt Server             Edison
+    ========================      ==========    ================================
+    |Remote      | NEWT    | ---> | Newt @ | -> | sremote |-> os.getenv("PATH")|
+    |Client      |connector|(rest)| NERSC  |    | endpoint|                    |
+    ========================      ==========    ================================
                                                                          |
     python type response <------------JSON response----------------------|
 ```
-
 ## Components
 
 ### Connectors
@@ -113,6 +128,46 @@ File's content is a JSON dictionary with the following format:
 
 ## Examples
 
+### Deployment
+
+The sremote endpoint needs to be deployed in the remote machine. This is
+required only once.
+
+SSH connector example.
+
+    import sremote.api as remote
+    import sremote.connector.ssh as ssh
+    
+    connector = ssh.ClientSSHConnector("remote.host.org")
+    connector.auth("username")
+    client = remote.RemoteClient(connector)
+    client.do_bootstrap_install()
+    
+    #- install a python library from a git repo in the remote endpoint
+     client.do_install_git_module(
+             "https://bitbucket.org/berkeleylab/qdo.git", 
+             "master", "qdo")
+    
+### Simple remote operation
+
+SSH connector example.
+
+    import sremote.api as remote
+    import sremote.connector.ssh as ssh
+    
+    connector = ssh.ClientSSHConnector("remote.host.org")
+    connector.auth("username")
+    client = remote.RemoteClient(connector)
+    
+    #- executes os.makedirs("/tmp/mydir") in the remote host
+    client.do_remote_call("os", "makedirs", args=["/tmp/mydir"])
+
+### Self contained
+The following examples assume that the sremote endpoint has never been deployed
+in the remote machine. In normal use, the deployment only happens once (not just
+in this session, but once ever).
+
+
 SSH connector example. It self-deploys, sets an environ variable and reads it.
 
     import sremote.api as remote
@@ -125,7 +180,12 @@ SSH connector example. It self-deploys, sets an environ variable and reads it.
     client.do_bootstrap_install()
     
     #- Previous code is only required to execute once.
+    
+    #- Sets a remote environment variable. It will be effective while consequent
+    #  remote calls are executed. 
     client.register_remote_env_variable("myVar", "myValue")
+    
+    #- Execute os.getenv("myvar") and retrieve result.
     return_value, out = client.do_remote_call("os", "getenv", 
                                           args=["myVar"]
                                           ) 
@@ -145,7 +205,12 @@ NERSC connector example. It self-deploys, sets an environ variable and reads it.
     client.do_bootstrap_install()
     
     #- Previous code is only required to execute once.
+    
+    #- Sets a remote environment variable. It will be effective while consequent
+    #  remote calls are executed.
     client.register_remote_env_variable("myVar", "myValue")
+    
+    #- Execute os.getenv("myvar") and retrieve result.
     return_value, out = client.do_remote_call("os", "getenv", 
                                           args=["myVar"]
                                           ) 
@@ -153,6 +218,7 @@ NERSC connector example. It self-deploys, sets an environ variable and reads it.
         "myValue"
 
 More examples can be found in bin/client, bin/installation and the unittests.
+
 
 
 ## Exceptions raised by do\_remote\_call
