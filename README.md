@@ -13,7 +13,7 @@ such libraries can become a nightmare.
 
 **SREMOTE simplifies the model**:it self deploys in the remote host, it
 can install libraries and connectors are extremely simple to implement.
-** A connector must only support three functions:**
+**A connector must only support three functions**:
 
 * Execute shell commands in the remote host.
 
