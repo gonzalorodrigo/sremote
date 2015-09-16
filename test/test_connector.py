@@ -177,6 +177,18 @@ class TestClientChannel(unittest.TestCase):
                 
         self._connector.set_pwd_dir("/oneroute")
         self.assertEqual(self._connector.get_pwd_dir(), "/oneroute")
+    
+    def test_effectice_pwd(self):
+        self._configure_remote_environment()
+        
+        self._connector.set_pwd_dir("/tmp/testpwd")
+        serialized_method_call_request = \
+            remote.encode_call_request("os", "getcwd")
+        
+        response, output, location, response_location = \
+            self._connector.place_and_execute(serialized_method_call_request)
+        code, function_return = remote.decode_call_response(response)
+        self.assertEqual("/tmp/testpwd", function_return)
         
     
     def _configure_remote_environment(self):

@@ -265,7 +265,8 @@ class ClientChannel(object):
                                method_request_reference, 
                                method_response_reference,
                                self.get_dir_sremote(),
-                               self.get_dir_tmp()], keep_env=keep_env)
+                               self.get_dir_tmp(),
+                               self.get_pwd_dir()], keep_env=keep_env)
         
         return output
 
