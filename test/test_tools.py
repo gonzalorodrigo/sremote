@@ -195,21 +195,25 @@ class TestTools(unittest.TestCase):
     def test_parse_location_file(self):
         text = """
             {"sremote": "/tmp/sremote_test/selfd",
-            "absolute_tmp": "/tmp/sremote_test/tmp"
+            "absolute_tmp": "/tmp/sremote_test/tmp",
+            "absolute_pwd": "/tmp/sremote_test/pwd"
             }
         """
         location = remote.parse_location_file(text)
         self.assertEqual(location["sremote"], "/tmp/sremote_test/selfd")
         self.assertEqual(location["absolute_tmp"], "/tmp/sremote_test/tmp")
+        self.assertEqual(location["absolute_pwd"], "/tmp/sremote_test/pwd")
         
         text = """
             {"sremote": "/tmp/sremote_test/selfd",
-            "relative_tmp": "tmp"
+            "relative_tmp": "tmp",
+            "relative_pwd": "pwd"
             }
         """
         location = remote.parse_location_file(text)
         self.assertEqual(location["sremote"], "/tmp/sremote_test/selfd")
         self.assertEqual(location["relative_tmp"], "tmp")
+        self.assertEqual(location["relative_pwd"], "pwd")
         
         text = """
             {"sremote": "/tmp/sremote_test/selfd"

@@ -83,7 +83,8 @@ class TestClientChannel(unittest.TestCase):
         remote_disc_file = "/tmp/sremote_test/.sremote/selfdisc.rc"
         create_file(local_disc_file, """
             {"sremote": "/tmp/sremote_test/selfd",
-            "relative_tmp": "local_tmp"
+            "relative_tmp": "local_tmp",
+            "relative_pwd": "tmp/local_pwd"
             }
         """)
         self._connector.push_file(local_disc_file, remote_disc_file)
@@ -94,6 +95,8 @@ class TestClientChannel(unittest.TestCase):
                          "/tmp/sremote_test/selfd")
         self.assertEqual(self._connector.get_dir_tmp(), 
                          self._connector.get_home_dir()+"/local_tmp")
+        self.assertEqual(self._connector.get_pwd_dir(), 
+                         self._connector.get_home_dir()+"/tmp/local_pwd")
         
     def test_do_self_discovery_absolute(self):
         self._connector.set_sremote_dir("/tmp/sremote_test/")
@@ -105,7 +108,8 @@ class TestClientChannel(unittest.TestCase):
         remote_disc_file = "/tmp/sremote_test/.sremote/selfdisc.rc"
         create_file(local_disc_file, """
             {"sremote": "/tmp/sremote_test/selfd",
-            "absolute_tmp": "/tmp/sremote_test/tmp"
+            "absolute_tmp": "/tmp/sremote_test/tmp",
+            "absolute_pwd": "/tmp/local_pwd"
             }
         """)
         self._connector._home_dir="/tmp/sremote_test"
@@ -116,6 +120,8 @@ class TestClientChannel(unittest.TestCase):
                          "/tmp/sremote_test/selfd")
         self.assertEqual(self._connector.get_dir_tmp(), 
                          "/tmp/sremote_test/tmp")
+        self.assertEqual(self._connector.get_pwd_dir(), 
+                        "/tmp/local_pwd")
              
     def test_place_and_execute(self):
         self._configure_remote_environment()

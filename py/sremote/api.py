@@ -347,7 +347,7 @@ class ClientChannel(object):
         """Configures the sremote library according to the information in a file
         placed in remote system at self.get_dir_sremote()+"/.location".
         The file is a json text representing a dictionary with the items:
-        sremote, absolute_tmp, and relative_tmp.
+        sremote, absolute_tmp, relative_tmp, absolute_pwd, and absolute_pwd
         
         Args:
             file_name: name of the file containing the configuration. This is
@@ -370,6 +370,12 @@ class ClientChannel(object):
                     self.set_tmp_dir(config["absolute_tmp"])
                 elif ("relative_tmp" in config.keys()):
                     self.set_tmp_at_home_dir(config["relative_tmp"])
+                else:
+                    return False
+                if ("absolute_pwd" in config.keys()):
+                    self.set_pwd_dir(config["absolute_pwd"])
+                elif ("relative_pwd" in config.keys()):
+                    self.set_pwd_at_home_dir(config["relative_pwd"])
                 else:
                     return False
             else:
