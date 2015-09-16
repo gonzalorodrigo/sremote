@@ -142,7 +142,8 @@ class RemoteClient(object):
             print "setup_bootstrap.sh execution error", output, err
             return False
         return self.do_install_git_module(
-                                "https://github.com/gonzalorodrigo/sremote.git")
+                                "https://github.com/gonzalorodrigo/sremote.git",
+                                "pwddir")
                                 
     
     def do_install_git_module(self, git_url, branch=None, keep_after=None):
