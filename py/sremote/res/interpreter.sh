@@ -32,12 +32,14 @@ if ( "${4}" != "") then
 	mkdir -p "${4}/tmp"
 endif
 
+if ( "${5}" != "") then
+	mkdir -p "${5}"
+
 cd $install_dir
 source env/bin/activate.csh
 set python_bin=`which python`
 
-if ( "${4}" != "") then
-	mkdir -p "${4}"
-	cd "${4}"
+if ( "${5}" != "") then
+	cd "${5}"
 endif
 python "${install_dir}/remote_server.py" "${1}" "${2}"

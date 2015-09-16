@@ -83,7 +83,8 @@ class TestClientChannel(unittest.TestCase):
         remote_disc_file = "/tmp/sremote_test/.sremote/selfdisc.rc"
         create_file(local_disc_file, """
             {"sremote": "/tmp/sremote_test/selfd",
-            "relative_tmp": "local_tmp"
+            "relative_tmp": "local_tmp",
+            "relative_pwd": "tmp/local_pwd"
             }
         """)
         self._connector.push_file(local_disc_file, remote_disc_file)
@@ -94,6 +95,8 @@ class TestClientChannel(unittest.TestCase):
                          "/tmp/sremote_test/selfd")
         self.assertEqual(self._connector.get_dir_tmp(), 
                          self._connector.get_home_dir()+"/local_tmp")
+        self.assertEqual(self._connector.get_pwd_dir(), 
+                         self._connector.get_home_dir()+"/tmp/local_pwd")
         
     def test_do_self_discovery_absolute(self):
         self._connector.set_sremote_dir("/tmp/sremote_test/")
@@ -105,7 +108,8 @@ class TestClientChannel(unittest.TestCase):
         remote_disc_file = "/tmp/sremote_test/.sremote/selfdisc.rc"
         create_file(local_disc_file, """
             {"sremote": "/tmp/sremote_test/selfd",
-            "absolute_tmp": "/tmp/sremote_test/tmp"
+            "absolute_tmp": "/tmp/sremote_test/tmp",
+            "absolute_pwd": "/tmp/local_pwd"
             }
         """)
         self._connector._home_dir="/tmp/sremote_test"
@@ -116,6 +120,8 @@ class TestClientChannel(unittest.TestCase):
                          "/tmp/sremote_test/selfd")
         self.assertEqual(self._connector.get_dir_tmp(), 
                          "/tmp/sremote_test/tmp")
+        self.assertEqual(self._connector.get_pwd_dir(), 
+                        "/tmp/local_pwd")
              
     def test_place_and_execute(self):
         self._configure_remote_environment()
@@ -166,6 +172,31 @@ class TestClientChannel(unittest.TestCase):
             self._connector.place_and_execute(serialized_method_call_request)
         code, function_return = remote.decode_call_response(response)
         self.assertIn("/impossible_dir", function_return.split(":"))
+    
+    def test_set_get_pwd_dir(self):
+        self.assertEqual(self._connector.get_pwd_dir(),
+                 self._connector.get_home_dir())
+
+        self._connector.set_pwd_at_home_dir("subfolder")
+        self.assertEqual(self._connector.get_pwd_dir(),
+                         self._connector.get_home_dir()+"/subfolder")
+                
+        self._connector.set_pwd_dir("/oneroute")
+        self.assertEqual(self._connector.get_pwd_dir(), "/oneroute")
+    
+    def test_effectice_pwd(self):
+        self._configure_remote_environment()
+        #- not using /tmp/ folder, because in OsX it maps to /private/tmp/
+        self._connector.set_pwd_at_home_dir("tmp/testpwd")
+        serialized_method_call_request = \
+            remote.encode_call_request("os", "getcwd")
+        
+        response, output, location, response_location = \
+            self._connector.place_and_execute(serialized_method_call_request)
+        code, function_return = remote.decode_call_response(response)
+        self.assertEqual(self._connector.get_home_dir()+"/tmp/testpwd", 
+                         function_return)
+        
     
     def _configure_remote_environment(self):
         self._connector.set_sremote_dir("/tmp/sremote_test/")

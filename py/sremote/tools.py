@@ -293,6 +293,9 @@ def parse_location_file(text):
         if ((not "relative_tmp" in obj.keys()) and 
             (not "absolute_tmp" in obj.keys())):
             return False
+        if ((not "relative_pwd" in obj.keys()) and 
+            (not "absolute_pwd" in obj.keys())):
+            return False
     return obj
     
 

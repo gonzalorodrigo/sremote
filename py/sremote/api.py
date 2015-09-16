@@ -265,7 +265,8 @@ class ClientChannel(object):
                                method_request_reference, 
                                method_response_reference,
                                self.get_dir_sremote(),
-                               self.get_dir_tmp()], keep_env=keep_env)
+                               self.get_dir_tmp(),
+                               self.get_pwd_dir()], keep_env=keep_env)
         
         return output
 
@@ -345,7 +346,7 @@ class ClientChannel(object):
         """Configures the sremote library according to the information in a file
         placed in remote system at self.get_dir_sremote()+"/.location".
         The file is a json text representing a dictionary with the items:
-        sremote, absolute_tmp, and relative_tmp.
+        sremote, absolute_tmp, relative_tmp, absolute_pwd, and absolute_pwd
         
         Args:
             file_name: name of the file containing the configuration. This is
@@ -368,6 +369,12 @@ class ClientChannel(object):
                     self.set_tmp_dir(config["absolute_tmp"])
                 elif ("relative_tmp" in config.keys()):
                     self.set_tmp_at_home_dir(config["relative_tmp"])
+                else:
+                    return False
+                if ("absolute_pwd" in config.keys()):
+                    self.set_pwd_dir(config["absolute_pwd"])
+                elif ("relative_pwd" in config.keys()):
+                    self.set_pwd_at_home_dir(config["relative_pwd"])
                 else:
                     return False
             else:
@@ -426,8 +433,7 @@ class ClientChannel(object):
         
     def set_tmp_dir(self, folder_route):
         """Sets the folder where the remote temporary files will be stored
-        (both for remote calls and output of batch jobs). If it does not exist,
-        sremote will create it in the next call.
+        If it does not exist, sremote will create it in the next call.
         
         Args:
             folder_route: absolute remote route where sremote temporary files
@@ -437,15 +443,36 @@ class ClientChannel(object):
     
     def set_tmp_at_home_dir(self, subfolder):
         """Sets the folder withing the user's HOME directory where the remote
-        temporary files will be stored (both for remote calls and output of
-        batch jobs): i.e. $HOME/[sub_folder]. If it does not exist,
-        sremote will create it in the next call.
+        temporary files will be stored: i.e. $HOME/[sub_folder]. If it does not
+        exist, sremote will create it in the next call.
         
         Args:
             folder_route: relative remote route to user's HOME dir. 
             Sremote temporary files will be placed there.
         """
         self._tmp_at_home=subfolder
+    
+    def set_pwd_dir(self, folder_route):
+        """Sets the working directory in which the remote commands will be
+        executed. It will be created if required."""
+        self._pwd_dir = folder_route
+        
+    def set_pwd_at_home_dir(self, sub_folder):
+        """Sets the working directory in which the remote commands will be
+        executed as a subfolder of user's home. It will be created if required.
+        """ 
+        self._pwd_at_home=sub_folder
+    
+    def get_pwd_dir(self):
+        """Returns the configured working directory. First the absolute (if set)
+        then the relative (if set) and then the user's home."""
+        if hasattr(self, "_pwd_dir"):
+            if self._pwd_dir:
+                return self._pwd_dir
+        if hasattr(self, "_pwd_at_home"):
+            if self._pwd_at_home:
+                return self.get_home_dir()+"/"+self._pwd_at_home
+        return self.get_home_dir()
         
         
     def get_dir_sremote(self):
