@@ -167,6 +167,18 @@ class TestClientChannel(unittest.TestCase):
         code, function_return = remote.decode_call_response(response)
         self.assertIn("/impossible_dir", function_return.split(":"))
     
+    def test_set_get_pwd_dir(self):
+        self.assertEqual(self._connector.get_pwd_dir(),
+                 self._connector.get_home_dir())
+
+        self._connector.set_pwd_at_home_dir("subfolder")
+        self.assertEqual(self._connector.get_pwd_dir(),
+                         self._connector.get_home_dir()+"/subfolder")
+                
+        self._connector.set_pwd_dir("/oneroute")
+        self.assertEqual(self._connector.get_pwd_dir(), "/oneroute")
+        
+    
     def _configure_remote_environment(self):
         self._connector.set_sremote_dir("/tmp/sremote_test/")
         self._connector.set_tmp_dir("/tmp/sremote_test/")
