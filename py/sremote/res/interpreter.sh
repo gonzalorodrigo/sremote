@@ -14,12 +14,6 @@
 # For Edison, Hopper, and Carver.
 
 setenv PATH /bin:/usr/bin:/sbin:/usr/sbin:$PATH
-if (-f /etc/profile.d/modules.csh) then
-	source /etc/profile.d/modules.csh
-	module load usg-default-modules
-	module load python
-	module load virtualenv
-endif 
 
 #module load python
 if ( "${3}" == "") then
@@ -40,8 +34,15 @@ cd $install_dir
 if ( -f "virtualenvs/py2.7/bin/activate.csh" ) then
 	source virtualenvs/py2.7/bin/activate.csh
 else
+	if (-f /etc/profile.d/modules.csh) then
+		source /etc/profile.d/modules.csh
+		module load usg-default-modules
+		module load python
+		module load virtualenv
+	endif 
 	source env/bin/activate.csh
 endif
+
 
 #- enables QDO (if called) to disable its virtualenvironment
 setenv _OLD_VIRTUAL_PATH $_OLD_VIRTUAL_PATH
