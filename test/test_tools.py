@@ -58,11 +58,16 @@ class TestTools(unittest.TestCase):
         self.assertEqual(os.getenv("MYVAR3", None), "MYVAL3")
     
     def test_add_environ_path(self):
+        
+        os.environ["_OLD_VIRTUAL_PATH"]="/one_path"
         self.assertNotIn("/myPath", os.getenv("PATH").split(":"))
         self.assertNotIn("/myOtherPath", os.getenv("PATH").split(":"))
         remote.add_environ_path(["/myPath", "/myOtherPath"])
         self.assertIn("/myPath", os.getenv("PATH").split(":"))
         self.assertIn("/myOtherPath", os.getenv("PATH").split(":"))
+        self.assertIn("/myPath", os.getenv("_OLD_VIRTUAL_PATH").split(":"))
+        self.assertIn("/myOtherPath", os.getenv("_OLD_VIRTUAL_PATH").split(":"))
+        
         
     def test_process_remote_call(self):
                 

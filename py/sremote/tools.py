@@ -113,6 +113,12 @@ def add_environ_path(path_list):
         for path in path_list:
             old_path+=":"+path
         os.environ["PATH"]=old_path
+        
+        old_virtual_path = os.getenv("_OLD_VIRTUAL_PATH")
+        if old_virtual_path:
+            for path in path_list:
+                old_virtual_path+=":"+path
+            os.environ["_OLD_VIRTUAL_PATH"]=old_virtual_path
 
 def process_remote_call(request_string):
     """Deserializes a call_request and executes it in invoked_object.
