@@ -37,6 +37,11 @@ if ( "${5}" != "") then
 
 cd $install_dir
 source env/bin/activate.csh
+
+#- enables QDO (if called) to disable its virtualenvironment
+setenv _OLD_VIRTUAL_PATH $_OLD_VIRTUAL_PATH
+setenv QDO_VIRTUAL_DEACTIVATE "do"
+
 set python_bin=`which python`
 
 if ( "${5}" != "") then
