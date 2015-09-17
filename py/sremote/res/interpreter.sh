@@ -36,7 +36,12 @@ if ( "${5}" != "") then
 	mkdir -p "${5}"
 
 cd $install_dir
-source env/bin/activate.csh
+
+if ( -f "virtualenvs/py2.7/bin/activate.csh" ) then
+	source virtualenvs/py2.7/bin/activate.csh
+else
+	source env/bin/activate.csh
+endif
 
 #- enables QDO (if called) to disable its virtualenvironment
 setenv _OLD_VIRTUAL_PATH $_OLD_VIRTUAL_PATH
