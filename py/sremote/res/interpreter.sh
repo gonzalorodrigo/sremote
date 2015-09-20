@@ -48,6 +48,17 @@ endif
 setenv _OLD_VIRTUAL_PATH $_OLD_VIRTUAL_PATH
 setenv QDO_VIRTUAL_DEACTIVATE "do"
 
+if $?PYTHONPATH then
+        setenv _OLD_PYTHONPATH $PYTHONPATH
+        unsetenv PYTHONPATH
+endif
+
+if $?PYTHONHOME then
+        setenv _OLD_PYTHONHOME $PYTHONHOME
+        unsetenv PYTHONHOME
+endif
+
+
 set python_bin=`which python`
 
 if ( "${5}" != "") then
