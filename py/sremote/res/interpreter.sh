@@ -44,13 +44,12 @@ else
 endif
 
 
-#- enables QDO (if called) to disable its virtualenvironment
-setenv _OLD_VIRTUAL_PATH $_OLD_VIRTUAL_PATH
-setenv QDO_VIRTUAL_DEACTIVATE "do"
-
 set python_bin=`which python`
 
 if ( "${5}" != "") then
 	cd "${5}"
 endif
-python "${install_dir}/remote_server.py" "${1}" "${2}"
+
+# -E makes python ignore all the environemnt variables that point to libraries
+# that may conflict with the installed in the virtual environment.
+$python_bin -E "${install_dir}/remote_server.py" "${1}" "${2}"
