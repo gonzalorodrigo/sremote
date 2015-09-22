@@ -33,7 +33,7 @@ cd $install_dir
 
 if ( -f "virtualenvs/py2.7/bin/activate.csh" ) then
 	source virtualenvs/py2.7/bin/activate.csh
-	setenv SREMOTE_BACKUP_ENV "$install_dir/virtualenvs/py2.7/bin/activate_this.py" 
+	setenv SREMOTE_BACKUP_ENV "$install_dir/virtualenvs/py2.7/" 
 else
 	if (-f /etc/profile.d/modules.csh) then
 		source /etc/profile.d/modules.csh
@@ -42,7 +42,7 @@ else
 		module load virtualenv
 	endif 
 	source env/bin/activate.csh
-	setenv SREMOTE_BACKUP_ENV "$install_dir/env/bin/activate_this.py" 
+	setenv SREMOTE_BACKUP_ENV "$install_dir/env/" 
 endif
 
 
