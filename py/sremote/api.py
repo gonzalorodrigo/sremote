@@ -403,8 +403,6 @@ class ClientChannel(object):
         return file_name
     def set_local_temp_dir(self, route):
         self._local_tmp_dir=route
-        
-        self.execute_command("/bin/mkdir", ["-p", self.get_dir_tmp()+"/tmp"])
     
     def get_local_temp_dir(self):
         if hasattr(self, "_local_tmp_dir"):
