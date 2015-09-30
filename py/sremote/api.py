@@ -315,6 +315,7 @@ class ClientChannel(object):
         if (not self.push_file(reference_route, remote_file_route)):
             self.create_remote_tmp_dir()
             self.push_file(reference_route, remote_file_route)
+        self.remove_local_file(reference_route)
         return remote_file_route
     
     def retrieve_call_response(self, method_responde_reference):
@@ -339,6 +340,7 @@ class ClientChannel(object):
         text_file = open(local_route_response, "r")
         content = "\n".join(text_file.readlines())
         text_file.close()
+        self.remove_local_file(local_route_response)
         return content
     
     
@@ -362,6 +364,7 @@ class ClientChannel(object):
             f = open(tmp_file, 'r')
             text = f.read()
             f.close()
+            self.remove_local_file(tmp_file)
             config = remote.parse_location_file(text)
             if config:
                 self.set_sremote_dir(config["sremote"])
@@ -398,13 +401,36 @@ class ClientChannel(object):
         if not in_file:
             file_name+=".out"
         return file_name
+    def set_local_temp_dir(self, route):
+        self._local_tmp_dir=route
+    
+    def get_local_temp_dir(self):
+        if hasattr(self, "_local_tmp_dir"):
+            return self._local_tmp_dir
+        return "/tmp"
+    def create_local_temp_dir(self):
+        self.ensure_dir(self.get_local_temp_dir())
+    
+    def ensure_dir(self, f):
+        d = os.path.dirname(f)
+        if not os.path.exists(d):
+            os.makedirs(d)
+    
+    def remove_local_file(self, file_route):
+        if os.path.exists(file_route):
+            os.remove(file_route)
+
+        
     def get_local_temp_file_route(self, in_file=True):
         """Returns a string with a local filseystem route where a file
         can be stored.
         
         Args:
             in_file: if true the file name will be appended .out"""
-        file_name = "/tmp/"+self.gen_random_file_name()
+        local_tmp_dir=self.get_local_temp_dir()
+        self.create_local_temp_dir()
+          
+        file_name = local_tmp_dir+"/"+self.gen_random_file_name()
         if not in_file:
             file_name+=".out"
         return file_name
